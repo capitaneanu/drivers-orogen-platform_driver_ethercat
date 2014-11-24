@@ -1,0 +1,63 @@
+name "platform_driver"
+# Optionally declare the version number
+# version "0.1"
+
+using_library "platform_driver"
+
+# If new data types need to be defined, they have to be put in a separate C++
+# header, and this header will be loaded here
+import_types_from "platform_driverTypes.hpp"
+import_types_from "platform_driver/Platform_Driver.h"
+
+# If the component/deployments use data types that are defined in other oroGen
+# projects, these projects should be imported there as well.
+import_types_from "base"
+
+# Declare a new task context (i.e., a component)
+#
+# The corresponding C++ class can be edited in tasks/Task.hpp and
+# tasks/Task.cpp, and will be put in the platform_driver namespace.
+task_context "Task" do
+    default_activity :periodic, 0.04
+    needs_configuration
+    # A configuration property (here, a std::string). Its value can be retrieved
+    # in the C++ code with # _config_value.get() and _config_value.set(new_value).
+    #property "config_value", "/std/string"
+    property("num_motors","int").doc("Number of motors in the platform.")
+    property("num_nodes","int").doc("Number of can nodes in the platform = Number of motors + number of group nodes")
+    property("can_dev_type","int",1).doc("1 for Peak-Systems interface. Only device type supported so far")
+    property("can_dev_address","/std/string","/dev/pcan0").doc("device address in the system. pcan32 for USB. pcan0 for PCIe")
+    property("watchdog","bool", false).doc("activate/deactivate watchdog on can network")
+    property("param_gear_motor_wheel","GearMotorParamType").doc("motor parameters of the wheel drives")
+    property("param_gear_motor_steer","GearMotorParamType").doc("motor parameters of the steer drives")
+    property("param_gear_motor_walk","GearMotorParamType").doc("motor parameters of the walk drives")
+    property("param_gear_motor_arm","GearMotorParamType").doc("motor parameters of the arm joint drives")
+    property("param_gear_motor_pan","GearMotorParamType").doc("motor parameters of the pan drive")
+    property("param_gear_motor_tilt","GearMotorParamType").doc("motor parameters of the tilt drive")
+    property("can_parameters","PltfCanParams").doc("parameters of platform can nodes")
+    #property("can_ids","std::vector<int>").doc("parameters of platform can nodes")
+    #property("can_names","std::vector<std::string>").doc("parameters of platform can nodes")
+    #property("can_types","std::vector<MotorType>").doc("parameters of platform can nodes")
+    property("current_factor","double",41.6).doc("system current measurement factor to convert from internal to physical units")
+    property("voltage_factor","double",3.93).doc("system voltage measurement factor to convert from internal to physical units")
+    property("bogie_factor","double",72).doc("system bogie measurement factor to convert from internal to physical units")
+    property("analog_readings_config", "/std/vector</platform_driver/AnalogId>").doc("Analog readings identifiers")
+    property("passive_readings_config", "/std/vector</platform_driver/AnalogId>").doc("Passive joints readings identifiers")
+
+    # An input port, i.e. an object from which the component gets data from
+    # other components' outputs
+    #
+    # Data can be retrieved using _input.read(value), which returns true if data
+    # was available, and false otherwise. _input.connected() returns if this
+    # input is connected to an output or not.
+    input_port "joints_commands", "base/commands/Joints"
+
+    # An output port, i.e. an object to which the component pushes data so that
+    # it is transmitted to other components' inputs
+    #
+    # Data can be written using _output.write(value). _output.connected() returns
+    # if this output is connected to an input or not.
+    output_port "joints_readings", '/base/samples/Joints'
+
+end
+

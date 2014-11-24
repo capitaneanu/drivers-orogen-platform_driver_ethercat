@@ -1,0 +1,17 @@
+<package>
+  <description brief="Rock platform driver component for the ExoTeR rover">
+  This component is responsible for the low level motion control of the platform. Controls every motor axis in the platform. Receives a vector of commands to the motors and informs of the status of those.
+  </description>
+  <author>Martin Azkarate/Martin.Azkarate@esa.int</author>
+  <license>GPL v2 or later</license>
+  <url>http://</url>
+  <logo>http://</logo>
+  <!--
+   To add any dependencies use the depend tag
+  <depend package="dummy-dependency-0" />
+	...
+  <depend package="dummy-dependency-n-1" />
+  <depend package="dummy-dependency-n" />
+  -->
+  <depend package="drivers/platform_driver" />
+</package>
