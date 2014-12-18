@@ -113,7 +113,7 @@ void Task::updateHook()
     /****************/
 
     /** Set New Joints commands **/
-    if (_joints_commands.read(joints_commands) == RTT::NewData)
+    if (_joints_commands.read(joints_commands, false) == RTT::NewData)
     {
         //std::cout<<"platform_driver::Task::updateHook : new joints command received"<<std::endl;
         for (size_t i=0; i<joints_commands.size(); ++i)
@@ -162,11 +162,11 @@ void Task::updateHook()
 		if (joints_resurrection[i]<3)
                 {
 			//! In case of reseting a node stop the motion of the rest of the motor
-                        for (int j=0;j<numMotors;j++)
+                        for (register size_t j=0;j<numMotors;j++)
                         {
                                 if (canParameters.Active[j])
                                 {
-                                        m_pPlatform_Driver->nodeVelocityCommandRadS(i, 0.0);
+                                        m_pPlatform_Driver->nodeVelocityCommandRadS(j, 0.0);
                                 }
                         }
 			std::cout << "Resetting motor "<< i << std::endl;
@@ -178,11 +178,11 @@ void Task::updateHook()
 			if (canParameters.Active[i]==ACTIVE)
                         {	
 			    //! In case of inactivating a node stop the motion of the rest of the motor
-                            for (int j=0;j<numMotors;j++)
+                            for (register size_t j=0;j<numMotors;j++)
                             {
                                 if (canParameters.Active[j])
                                 {
-                                        m_pPlatform_Driver->nodeVelocityCommandRadS(i, 0.0);
+                                        m_pPlatform_Driver->nodeVelocityCommandRadS(j, 0.0);
                                 }
                             }
                             m_pPlatform_Driver->shutdownNode(i);
