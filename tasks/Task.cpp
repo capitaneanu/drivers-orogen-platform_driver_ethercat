@@ -12,7 +12,6 @@
 #endif
 
 using namespace platform_driver;
-using namespace base::actuators;
 
 Task::Task(std::string const& name)
     : TaskBase(name)
