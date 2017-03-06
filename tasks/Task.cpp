@@ -41,7 +41,7 @@ bool Task::configureHook()
 
     /** Get the configurations **/
     canParameters = _can_parameters.get();
-    analogConfig = _analog_readings_config.get();
+    //analogConfig = _analog_readings_config.get();
     passiveConfig = _passive_readings_config.get();
     numMotors=_num_motors.value();
 
@@ -56,9 +56,9 @@ bool Task::configureHook()
     m_pPlatform_Driver = new Platform_Driver(_num_motors,_num_nodes,_can_dev_type,_can_dev_address,_watchdog);
 
     joints_status.resize(numMotors);
-    joints_readings.resize(numMotors+passiveConfig.size()+analogConfig.size());
-    system_current_factor=_current_factor.value();
-    system_voltage_factor=_voltage_factor.value();
+    joints_readings.resize(numMotors+passiveConfig.size());//+analogConfig.size());
+    //system_current_factor=_current_factor.value();
+    //system_voltage_factor=_voltage_factor.value();
     bogie_pitch_factor=_bogie_factor.value();
     joints_resurrection.resize(numMotors);
     sample_index=0;
@@ -84,12 +84,15 @@ bool Task::configureHook()
         ++i;
     }
 
+//! Commented block in HDPR, not available system info in HDPR
+/*
     // Fill the Joints names with the system info
     for(std::vector<platform_driver::AnalogId>::iterator it = analogConfig.begin(); it != analogConfig.end(); ++it)
     {
         joints_readings.names[i] = it->name;
         ++i;
     }
+*/
 
     return true;
 }
@@ -127,6 +130,9 @@ void Task::updateHook()
         	        else if (joint.isSpeed())
                 	{
 	                        m_pPlatform_Driver->nodeVelocityCommandRadS(i, joint.speed);
+	                        // This throws errors, however we want to the motors to be completely off (no torque) when stopped
+    	                    //if(joint.speed == 0.0f)
+    	                    //    m_pPlatform_Driver->nodeTorqueCommandNm(i, 0.0f);
         	        }
 		}
        }
@@ -198,21 +204,24 @@ void Task::updateHook()
         m_pPlatform_Driver->getNodeAnalogInput(it->id, &dAnalogInput);
 
         base::JointState &joint(joints_readings[it->name]);
-        if (it->id == 0)
-            joint.position = (-(dAnalogInput-2.5)*bogie_pitch_factor)*D2R;
+        if (it->id == 3 || it->id == 5)
+            joint.position = (-dAnalogInput)*bogie_pitch_factor;//*D2R;
         else
-            joint.position = (dAnalogInput-2.5)*bogie_pitch_factor*D2R;
+            joint.position = (dAnalogInput)*bogie_pitch_factor;//*D2R;
     }
 
-    /** Get the Analog System information (Voltage) **/
+//! Commented block for HDPR, no system info in HDPR
+/*
+    // Get the Analog System information (Voltage) //
     m_pPlatform_Driver->getNodeAnalogInput(analogConfig[0].id, &dAnalogInput);
     base::JointState &joint_voltage(joints_readings[analogConfig[0].name]);
     joint_voltage.raw = (dAnalogInput-2.5)*system_voltage_factor;
 
-    /** Get the Analog System information (Current) **/
+    // Get the Analog System information (Current) //
     m_pPlatform_Driver->getNodeAnalogInput(analogConfig[1].id, &dAnalogInput);
     base::JointState &joint_current(joints_readings[analogConfig[1].name]);
     joint_current.raw = (dAnalogInput-2.5)*system_current_factor;
+*/
 
     _joints_readings.write(joints_readings);
 
