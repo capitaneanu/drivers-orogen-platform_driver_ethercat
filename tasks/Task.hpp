@@ -71,6 +71,7 @@ namespace platform_driver {
 
         std::vector<bool> joints_status;
         std::vector<bool> stop_motor;
+        std::vector<bool> start_motor;
 	std::vector<unsigned int> joints_resurrection; // Counter to keep track of anumber of attends to (re)start a joint/motor
 
         /**********************/

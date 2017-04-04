@@ -62,12 +62,15 @@ bool Task::configureHook()
     bogie_pitch_factor=_bogie_factor.value();
     joints_resurrection.resize(numMotors);
     sample_index=0;
-    stop_motor.resize(_num_nodes.value());
+    stop_motor.resize(numMotors);
+    start_motor.resize(numMotors);
     
     // Initialize values of joints_resurrection
     for(register int j = 0; j < numMotors; ++j)
     {
         joints_resurrection[j] = 0;
+        stop_motor[j]=false;
+        start_motor[j]=false;
     }
 
     // Fill the Joints names with the can_parameters names
@@ -123,21 +126,30 @@ void Task::updateHook()
         {
 		if (canParameters.Active[i])
 		{
-                	base::JointState &joint(joints_commands[i]);
-	                if (joint.isPosition())
-        	        {
-                	    m_pPlatform_Driver->nodePositionCommandRad(i, joint.position);
-	                }
-        	        else if (joint.isSpeed())
-                	{
-                        m_pPlatform_Driver->nodeVelocityCommandRadS(i, joint.speed);
-                        if (joint.speed==0){
-                            stop_motor[i]=true;
-                            std::cout << "stop motor: " << i << std::endl;
-                        }
-        	        }
+            base::JointState &joint(joints_commands[i]);
+	        if (joint.isPosition())
+        	{
+                m_pPlatform_Driver->nodePositionCommandRad(i, joint.position);
+	        }
+        	else if (joint.isSpeed())
+            {
+                if (start_motor[i] && i<6){
+                    m_pPlatform_Driver->startNode(i);
+                    start_motor[i]=false;
+                    std::cout << "start motor: " << i << std::endl;
+                }                            
+                m_pPlatform_Driver->nodeVelocityCommandRadS(i, joint.speed);
+                if (i==10 && joint.speed==0){
+                    for (int j=0;j<6;j++){
+                        stop_motor[j]=true;
+                    }
+                    std::cout << "stop all motors" << std::endl;
+                }else if (i<6){
+                    stop_motor[i]=false;
+                }
+        	}
 		}
-       }
+        }
     }
 
     /*************/
@@ -153,14 +165,15 @@ void Task::updateHook()
     	bool status=m_pPlatform_Driver->getNodeData(i, &dPositionRad, &dVelocityRadS, &dCurrentAmp, &dTorqueNm);
 	
         /** Joints readings & status information **/
-	base::JointState &joint(joints_readings[i]);
+	    base::JointState &joint(joints_readings[i]);
         joint.position = dPositionRad;
         joint.speed = dVelocityRadS;
-        if (stop_motor[i] && std::abs(joint.speed)<0.01){
+        if (stop_motor[i] && i<6 && std::abs(joint.speed)<0.01){
+            std::cout<< "stop motor: " << i << std::endl;
+            m_pPlatform_Driver->nodeTorqueCommandNm(i,0.0);
             m_pPlatform_Driver->shutdownNode(i);
-            std::cout<< "start motor: " << i << std::endl;
-            m_pPlatform_Driver->startNode(i);
             stop_motor[i]=false;
+            start_motor[i]=true;
         }
         joint.raw = dCurrentAmp;
         joint.effort = dTorqueNm;
