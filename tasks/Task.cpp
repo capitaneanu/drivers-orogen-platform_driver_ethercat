@@ -62,6 +62,7 @@ bool Task::configureHook()
     bogie_pitch_factor=_bogie_factor.value();
     joints_resurrection.resize(numMotors);
     sample_index=0;
+    stop_motor.resize(_num_nodes.value());
     
     // Initialize values of joints_resurrection
     for(register int j = 0; j < numMotors; ++j)
@@ -125,14 +126,15 @@ void Task::updateHook()
                 	base::JointState &joint(joints_commands[i]);
 	                if (joint.isPosition())
         	        {
-                	        m_pPlatform_Driver->nodePositionCommandRad(i, joint.position);
+                	    m_pPlatform_Driver->nodePositionCommandRad(i, joint.position);
 	                }
         	        else if (joint.isSpeed())
                 	{
-	                        m_pPlatform_Driver->nodeVelocityCommandRadS(i, joint.speed);
-	                        // This throws errors, however we want to the motors to be completely off (no torque) when stopped
-    	                    //if(joint.speed == 0.0f)
-    	                    //    m_pPlatform_Driver->nodeTorqueCommandNm(i, 0.0f);
+                        m_pPlatform_Driver->nodeVelocityCommandRadS(i, joint.speed);
+                        if (joint.speed==0){
+                            stop_motor[i]=true;
+                            std::cout << "stop motor: " << i << std::endl;
+                        }
         	        }
 		}
        }
@@ -154,6 +156,12 @@ void Task::updateHook()
 	base::JointState &joint(joints_readings[i]);
         joint.position = dPositionRad;
         joint.speed = dVelocityRadS;
+        if (stop_motor[i] && std::abs(joint.speed)<0.01){
+            m_pPlatform_Driver->shutdownNode(i);
+            std::cout<< "start motor: " << i << std::endl;
+            m_pPlatform_Driver->startNode(i);
+            stop_motor[i]=false;
+        }
         joint.raw = dCurrentAmp;
         joint.effort = dTorqueNm;
 
