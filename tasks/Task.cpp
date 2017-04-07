@@ -46,7 +46,7 @@ bool Task::configureHook()
 
     if (static_cast<unsigned int>(_num_nodes) != _can_parameters.get().CanId.size() || _can_parameters.get().CanId.size()!=_can_parameters.get().Name.size() || _can_parameters.get().Name.size()!=_can_parameters.get().Type.size())
     {
-    	//std::cout<<"wrong config "<< _num_nodes << " " << _can_parameters.get().CanId.size() << " " << _can_parameters.get().Name.size() << " " << _can_parameters.get().Type.size() <<std::endl;
+    	std::cout<<"wrong config "<< _num_nodes << " " << _can_parameters.get().CanId.size() << " " << _can_parameters.get().Name.size() << " " << _can_parameters.get().Type.size() <<std::endl;
     	return false;
     }
 
