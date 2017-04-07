@@ -1,5 +1,3 @@
-/* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
-
 #include "Task.hpp"
 #include <platform_driver/Platform_Driver.h>
 
@@ -48,7 +46,7 @@ bool Task::configureHook()
 
     if (static_cast<unsigned int>(_num_nodes) != _can_parameters.get().CanId.size() || _can_parameters.get().CanId.size()!=_can_parameters.get().Name.size() || _can_parameters.get().Name.size()!=_can_parameters.get().Type.size())
     {
-    	std::cout<<"wrong config "<< _num_nodes << " " << _can_parameters.get().CanId.size() << " " << _can_parameters.get().Name.size() << " " << _can_parameters.get().Type.size() <<std::endl;
+    	//std::cout<<"wrong config "<< _num_nodes << " " << _can_parameters.get().CanId.size() << " " << _can_parameters.get().Name.size() << " " << _can_parameters.get().Type.size() <<std::endl;
     	return false;
     }
 
@@ -136,14 +134,14 @@ void Task::updateHook()
                 if (start_motor[i] && i<6){
                     m_pPlatform_Driver->startNode(i);
                     start_motor[i]=false;
-                    std::cout << "start motor: " << i << std::endl;
+                    //std::cout << "start motor: " << i << std::endl;
                 }                            
                 m_pPlatform_Driver->nodeVelocityCommandRadS(i, joint.speed);
                 if (i==10 && joint.speed==0){
                     for (int j=0;j<6;j++){
                         stop_motor[j]=true;
                     }
-                    std::cout << "stop all motors" << std::endl;
+                    //std::cout << "stop all motors" << std::endl;
                 }else if (i<6){
                     stop_motor[i]=false;
                 }
@@ -169,7 +167,7 @@ void Task::updateHook()
         joint.position = dPositionRad;
         joint.speed = dVelocityRadS;
         if (stop_motor[i] && i<6 && std::abs(joint.speed)<0.01){
-            std::cout<< "stop motor: " << i << std::endl;
+            //std::cout<< "stop motor: " << i << std::endl;
             m_pPlatform_Driver->nodeTorqueCommandNm(i,0.0);
             m_pPlatform_Driver->shutdownNode(i);
             stop_motor[i]=false;
@@ -195,7 +193,7 @@ void Task::updateHook()
                                         m_pPlatform_Driver->nodeVelocityCommandRadS(j, 0.0);
                                 }
                         }
-			std::cout << "Resetting motor "<< i << std::endl;
+			//std::cout << "Resetting motor "<< i << std::endl;
 			m_pPlatform_Driver->resetNode(i);
 			joints_resurrection[i]++;
 		}
@@ -212,7 +210,7 @@ void Task::updateHook()
                                 }
                             }
                             m_pPlatform_Driver->shutdownNode(i);
-		    	    std::cout << "Motor " << i << " INACTIVE" << std::endl;
+		    	    //std::cout << "Motor " << i << " INACTIVE" << std::endl;
 			    canParameters.Active[i]=INACTIVE;
                         }
 		}
