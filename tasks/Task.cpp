@@ -67,7 +67,7 @@ bool Task::configureHook()
     for(register int j = 0; j < numMotors; ++j)
     {
         joints_resurrection[j] = 0;
-        stop_motor[j]=false;
+        stop_motor[j]=true;
         start_motor[j]=false;
     }
 
