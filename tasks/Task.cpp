@@ -67,8 +67,8 @@ bool Task::configureHook()
     for(register int j = 0; j < numMotors; ++j)
     {
         joints_resurrection[j] = 0;
-        stop_motor[j]=true;
-        start_motor[j]=false;
+        stop_motor[j]=false;
+        start_motor[j]=true;
     }
 
     // Fill the Joints names with the can_parameters names
