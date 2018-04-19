@@ -58,6 +58,7 @@ task_context "Task" do
     # Data can be written using _output.write(value). _output.connected() returns
     # if this output is connected to an input or not.
     output_port "joints_readings", '/base/samples/Joints'
+    output_port "error_in_motor", 'int'
 
 end
 

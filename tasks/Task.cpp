@@ -157,6 +157,7 @@ void Task::updateHook()
     /** Time stamp for the joints port**/
     joints_readings.time = base::Time::now();
 
+    bool error_in_motor=false;
     /** Get the Joints information **/
     for (int i=0;i<numMotors;i++)
     {
@@ -214,8 +215,12 @@ void Task::updateHook()
 			    canParameters.Active[i]=INACTIVE;
                         }
 		}
+                _error_in_motor.write(i+1);
+                error_in_motor=true;
 	}
     }
+    if (!error_in_motor)
+        _error_in_motor.write(0);
 
     /** Get the Passive joints information **/
     for(std::vector<platform_driver::AnalogId>::iterator it = passiveConfig.begin(); it != passiveConfig.end(); ++it)
