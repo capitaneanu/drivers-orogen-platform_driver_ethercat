@@ -18,6 +18,7 @@ import_types_from "base"
 # The corresponding C++ class can be edited in tasks/Task.hpp and
 # tasks/Task.cpp, and will be put in the platform_driver namespace.
 task_context "Task" do
+    abstract
     default_activity :periodic, 0.04
     needs_configuration
     # A configuration property (here, a std::string). Its value can be retrieved
@@ -62,3 +63,8 @@ task_context "Task" do
 
 end
 
+task_context "Exoter", subclasses: "Task" do
+end
+
+task_context "Hdpr", subclasses: "Task" do
+end
