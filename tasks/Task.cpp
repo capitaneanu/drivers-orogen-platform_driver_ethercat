@@ -28,7 +28,9 @@ bool Task::configureHook()
     numMotors=_num_motors.value();
 
 
-    if (static_cast<unsigned int>(_num_nodes) != _can_parameters.get().CanId.size() || _can_parameters.get().CanId.size()!=_can_parameters.get().Name.size() || _can_parameters.get().Name.size()!=_can_parameters.get().Type.size())
+    if (static_cast<unsigned int>(_num_nodes) != _can_parameters.get().CanId.size() ||
+        _can_parameters.get().CanId.size() != _can_parameters.get().Name.size() ||
+        _can_parameters.get().Name.size() != _can_parameters.get().Type.size())
     {
         std::cout<<"wrong config "<< _num_nodes << " " << _can_parameters.get().CanId.size() << " " << _can_parameters.get().Name.size() << " " << _can_parameters.get().Type.size() <<std::endl;
         return false;
@@ -48,7 +50,7 @@ bool Task::configureHook()
     start_motor.resize(numMotors);
 
     // Initialize values of joints_resurrection
-    for(register int j = 0; j < numMotors; ++j)
+    for(int j = 0; j < numMotors; ++j)
     {
         joints_resurrection[j] = 0;
         stop_motor[j]=false;
@@ -57,23 +59,23 @@ bool Task::configureHook()
 
     // Fill the Joints names with the can_parameters names
     size_t i = 0;
-    for(register int j = 0; j < numMotors; ++j)
+    for(int j = 0; j < numMotors; ++j)
     {
         joints_readings.names[i] = canParameters.Name[j];
         ++i;
     }
 
     // Fill the Joints names with the passive_config names
-    for(std::vector<platform_driver::AnalogId>::iterator it = passiveConfig.begin(); it != passiveConfig.end(); ++it)
+    for(const auto& joint : passiveConfig)
     {
-        joints_readings.names[i] = it->name;
+        joints_readings.names[i] = joint.name;
         ++i;
     }
 
     // Fill the Joints names with the system info
-    for(std::vector<platform_driver::AnalogId>::iterator it = analogConfig.begin(); it != analogConfig.end(); ++it)
+    for(const auto& joint : analogConfig)
     {
-        joints_readings.names[i] = it->name;
+        joints_readings.names[i] = joint.name;
         ++i;
     }
 
@@ -84,8 +86,17 @@ bool Task::startHook()
 {
     if (! TaskBase::startHook())
         return false;
-    if (m_pPlatform_Driver->initPltf(_param_gear_motor_wheel,_param_gear_motor_steer,_param_gear_motor_walk,_param_gear_motor_pan,_param_gear_motor_tilt,_param_gear_motor_arm,_can_parameters))
+
+    if (m_pPlatform_Driver->initPltf(_param_gear_motor_wheel,
+                                     _param_gear_motor_steer,
+                                     _param_gear_motor_walk,
+                                     _param_gear_motor_pan,
+                                     _param_gear_motor_tilt,
+                                     _param_gear_motor_arm,
+                                     _can_parameters))
+    {
         return true;
+    }
 
     return false;
 }

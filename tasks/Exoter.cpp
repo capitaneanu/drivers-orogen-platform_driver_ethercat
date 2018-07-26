@@ -31,7 +31,7 @@ void Exoter::setJointCommands()
         {
             if (canParameters.Active[i])
             {
-                base::JointState &joint(joints_commands[i]);
+                base::JointState& joint(joints_commands[i]);
                 if (joint.isPosition())
                 {
                     m_pPlatform_Driver->nodePositionCommandRad(i, joint.position);
@@ -69,7 +69,7 @@ void Exoter::getJointInformation()
             if (joints_resurrection[i]<3)
             {
                 //! In case of reseting a node stop the motion of the rest of the motor
-                for (register size_t j = 0; j < static_cast<size_t>(numMotors); j++)
+                for (size_t j = 0; j < static_cast<size_t>(numMotors); j++)
                 {
                     if (canParameters.Active[j])
                     {
@@ -82,10 +82,10 @@ void Exoter::getJointInformation()
             }
             else
             {
-                if (canParameters.Active[i]==ACTIVE)
+                if (canParameters.Active[i] == ACTIVE)
                 {   
                     //! In case of inactivating a node stop the motion of the rest of the motor
-                    for (register size_t j=0;j<static_cast<size_t>(numMotors);j++)
+                    for (size_t j = 0; j < static_cast<size_t>(numMotors); ++j)
                     {
                         if (canParameters.Active[j])
                         {
