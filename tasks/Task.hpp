@@ -19,8 +19,8 @@ class Task : public TaskBase
     friend class TaskBase;
     protected:
 
-        void setJointCommands();
-        void getJointInformation();
+        virtual void setJointCommands() = 0;
+        virtual void getJointInformation() = 0;
 
         Platform_Driver* m_pPlatform_Driver;
         base::Time t;

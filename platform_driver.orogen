@@ -63,8 +63,10 @@ task_context "Task" do
 
 end
 
-task_context "Exoter", subclasses: "Task" do
+task_context "Exoter" do
+    subclasses "Task"
 end
 
-task_context "Hdpr", subclasses: "Task" do
+task_context "Hdpr" do
+    subclasses "Task"
 end

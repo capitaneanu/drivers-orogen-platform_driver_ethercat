@@ -16,7 +16,7 @@ Hdpr::~Hdpr()
 {
 }
 
-void Task::setJointCommands()
+void Hdpr::setJointCommands()
 {
     if (_joints_commands.read(joints_commands, false) == RTT::NewData)
     {
@@ -55,7 +55,7 @@ void Task::setJointCommands()
     }
 }
 
-void Task::getJointInformation()
+void Hdpr::getJointInformation()
 {
     bool error_in_motor=false;
     for (int i=0; i < numMotors; i++)
@@ -66,8 +66,7 @@ void Task::getJointInformation()
         base::JointState& joint(joints_readings[i]);
         joint.position = dPositionRad;
         joint.speed = dVelocityRadS;
-        if (stop_motor[i] && i<6 && std::abs(joint.speed)<0.01){
-            //std::cout<< "stop motor: " << i << std::endl;
+        if (stop_motor[i] && i<6 && std::abs(joint.speed) < 0.01){
             m_pPlatform_Driver->nodeTorqueCommandNm(i,0.0);
             m_pPlatform_Driver->shutdownNode(i);
             stop_motor[i]=false;
