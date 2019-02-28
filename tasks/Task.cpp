@@ -27,15 +27,13 @@ bool Task::configureHook()
     passiveConfig = _passive_readings_config.get();
     numMotors=_num_motors.value();
 
-
     if (static_cast<unsigned int>(_num_nodes) != _can_parameters.get().CanId.size() ||
         _can_parameters.get().CanId.size() != _can_parameters.get().Name.size() ||
         _can_parameters.get().Name.size() != _can_parameters.get().Type.size())
     {
-        std::cout<<"wrong config "<< _num_nodes << " " << _can_parameters.get().CanId.size() << " " << _can_parameters.get().Name.size() << " " << _can_parameters.get().Type.size() <<std::endl;
+        LOG_ERROR_S << "wrong config "<< _num_nodes << " " << _can_parameters.get().CanId.size() << " " << _can_parameters.get().Name.size() << " " << _can_parameters.get().Type.size();
         return false;
     }
-
 
     m_pPlatform_Driver = new Platform_Driver(_num_motors,_num_nodes,_can_dev_type,_can_dev_address,_watchdog);
 
@@ -114,23 +112,19 @@ void Task::updateHook()
 void Task::errorHook()
 {
     TaskBase::errorHook();
-    RTT::log(RTT::Info)<<"platform_driver::Task: Entering the error hook!"<<RTT::endlog();
     m_pPlatform_Driver->shutdownPltf();
 }
 
 void Task::stopHook()
 {
     TaskBase::stopHook();
-    RTT::log(RTT::Info)<<"platform_driver::Task: Entering the stop hook!"<<RTT::endlog();
     /** Emergency stop of the motors **/
     m_pPlatform_Driver->shutdownPltf();
-
 }
 
 void Task::cleanupHook()
 {
     TaskBase::cleanupHook();
-    RTT::log(RTT::Info)<<"platform_driver::Task: Entering the cleanup hook!"<<RTT::endlog();
     m_pPlatform_Driver->shutdownPltf();
 
     delete m_pPlatform_Driver;

@@ -10,6 +10,8 @@
 #include <base/samples/Joints.hpp>
 #include <base/commands/Joints.hpp>
 
+#include <base-logging/Logging.hpp>
+
 class Platform_Driver;
 
 namespace platform_driver {

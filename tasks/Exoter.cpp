@@ -27,7 +27,7 @@ void Exoter::setJointCommands()
 {
     if (_joints_commands.read(joints_commands, false) == RTT::NewData)
     {
-        for (size_t i=0; i<joints_commands.size(); ++i)
+        for (size_t i=0; i < joints_commands.size(); ++i)
         {
             if (canParameters.Active[i])
             {
@@ -47,7 +47,7 @@ void Exoter::setJointCommands()
 
 void Exoter::getJointInformation()
 {
-    bool error_in_motor=false;
+    bool error_in_motor = false;
     for (int i = 0; i < numMotors; i++)
     {
         bool status=m_pPlatform_Driver->getNodeData(i, &dPositionRad, &dVelocityRadS, &dCurrentAmp, &dTorqueNm);
@@ -60,9 +60,9 @@ void Exoter::getJointInformation()
         joint.effort = dTorqueNm;
 
         if (canParameters.Active[i] && status)
-            joints_status[i]=true;
+            joints_status[i] = true;
         else
-            joints_status[i]=false;
+            joints_status[i] = false;
 
         if (!status)
         {
@@ -76,14 +76,14 @@ void Exoter::getJointInformation()
                         m_pPlatform_Driver->nodeVelocityCommandRadS(j, 0.0);
                     }
                 }
-                std::cout << "Resetting motor "<< i << std::endl;
+                LOG_DEBUG_S << "Resetting motor " << i;
                 m_pPlatform_Driver->resetNode(i);
                 joints_resurrection[i]++;
             }
             else
             {
                 if (canParameters.Active[i] == ACTIVE)
-                {   
+                {
                     //! In case of inactivating a node stop the motion of the rest of the motor
                     for (size_t j = 0; j < static_cast<size_t>(numMotors); ++j)
                     {
@@ -93,8 +93,8 @@ void Exoter::getJointInformation()
                         }
                     }
                     m_pPlatform_Driver->shutdownNode(i);
-                    std::cout << "Motor " << i << " INACTIVE" << std::endl;
-                    canParameters.Active[i]=INACTIVE;
+                    LOG_DEBUG_S << "Motor " << i << " INACTIVE";
+                    canParameters.Active[i] = INACTIVE;
                 }
             }
             _error_in_motor.write(i+1);

@@ -31,7 +31,7 @@ void Hdpr::setJointCommands()
                 }
                 else if (joint.isSpeed())
                 {
-                    if (start_motor[i] && i<6)
+                    if (start_motor[i] && i < 6)
                     {
                         m_pPlatform_Driver->startNode(i);
                         start_motor[i]=false;
@@ -40,7 +40,7 @@ void Hdpr::setJointCommands()
 
                     if (i==10 && joint.speed==0)
                     {
-                        for (int j=0;j<6;j++)
+                        for (int j = 0; j < 6; j++)
                         {
                             stop_motor[j]=true;
                         }
@@ -76,9 +76,9 @@ void Hdpr::getJointInformation()
         joint.effort = dTorqueNm;
 
         if (canParameters.Active[i] && status)
-            joints_status[i]=true;
+            joints_status[i] = true;
         else
-            joints_status[i]=false;
+            joints_status[i] = false;
 
         if (!status)
         {
@@ -92,7 +92,7 @@ void Hdpr::getJointInformation()
                         m_pPlatform_Driver->nodeVelocityCommandRadS(j, 0.0);
                     }
                 }
-                //std::cout << "Resetting motor "<< i << std::endl;
+                LOG_INFO_S << "Resetting motor " << i;
                 m_pPlatform_Driver->resetNode(i);
                 joints_resurrection[i]++;
             }
@@ -109,12 +109,12 @@ void Hdpr::getJointInformation()
                         }
                     }
                     m_pPlatform_Driver->shutdownNode(i);
-                    //std::cout << "Motor " << i << " INACTIVE" << std::endl;
-                    canParameters.Active[i]=INACTIVE;
+                    LOG_INFO_S << "Motor " << i << " INACTIVE";
+                    canParameters.Active[i] = INACTIVE;
                 }
             }
             _error_in_motor.write(i+1);
-            error_in_motor=true;
+            error_in_motor = true;
         }
     }
     if (!error_in_motor)
