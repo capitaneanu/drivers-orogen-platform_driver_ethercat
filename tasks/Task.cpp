@@ -112,20 +112,20 @@ void Task::updateHook()
 void Task::errorHook()
 {
     TaskBase::errorHook();
+
     m_pPlatform_Driver->shutdownPltf();
 }
 
 void Task::stopHook()
 {
     TaskBase::stopHook();
-    /** Emergency stop of the motors **/
+
     m_pPlatform_Driver->shutdownPltf();
 }
 
 void Task::cleanupHook()
 {
     TaskBase::cleanupHook();
-    m_pPlatform_Driver->shutdownPltf();
 
     delete m_pPlatform_Driver;
 }
