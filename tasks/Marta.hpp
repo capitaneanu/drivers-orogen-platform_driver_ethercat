@@ -3,20 +3,21 @@
 
 #include "platform_driver/MartaBase.hpp"
 
-namespace platform_driver{
-    class Marta : public MartaBase
-    {
-	friend class MartaBase;
-    protected:
-        void setJointCommands();
-        void getJointInformation();
+namespace platform_driver
+{
+class Marta : public MartaBase
+{
+    friend class MartaBase;
 
-    public:
-        Marta(std::string const& name = "platform_driver::Marta");
-        Marta(std::string const& name, RTT::ExecutionEngine* engine);
-        ~Marta();
-    };
+  protected:
+    void setJointCommands();
+    void getJointInformation();
+
+  public:
+    Marta(std::string const& name = "platform_driver::Marta");
+    Marta(std::string const& name, RTT::ExecutionEngine* engine);
+    ~Marta();
+};
 }
 
 #endif
-

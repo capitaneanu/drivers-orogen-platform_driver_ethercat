@@ -3,20 +3,22 @@
 
 #include "platform_driver/HdprBase.hpp"
 
-namespace platform_driver{
+namespace platform_driver
+{
 
-    class Hdpr : public HdprBase
-    {
-	friend class HdprBase;
-    protected:
-        void setJointCommands();
-        void getJointInformation();
+class Hdpr : public HdprBase
+{
+    friend class HdprBase;
 
-    public:
-        Hdpr(std::string const& name = "platform_driver::Hdpr");
-        Hdpr(std::string const& name, RTT::ExecutionEngine* engine);
-        ~Hdpr();
-    };
+  protected:
+    void setJointCommands();
+    void getJointInformation();
+
+  public:
+    Hdpr(std::string const& name = "platform_driver::Hdpr");
+    Hdpr(std::string const& name, RTT::ExecutionEngine* engine);
+    ~Hdpr();
+};
 }
 
 #endif
