@@ -15,6 +15,41 @@ Marta::Marta(std::string const& name, RTT::ExecutionEngine* engine) : MartaBase(
 
 Marta::~Marta() {}
 
+bool Marta::configureHook()
+{
+    if (!MartaBase::configureHook() || !Task::configureHook())
+    {
+        return false;
+    }
+
+    numFts = _num_fts.value();
+    fts_readings.resize(numFts);
+
+    for (int i = 0; i < numFts; ++i)
+    {
+        fts_readings.names[i] = canParameters.Name[numMotors + i];
+    }
+
+    return true;
+}
+
+void Marta::updateHook()
+{
+    MartaBase::updateHook();
+    Task::updateHook();
+
+    setJointCommands();
+    getJointInformation();
+
+    joints_readings.time = base::Time::now();
+    _joints_readings.write(joints_readings);
+
+    getFtsInformation();
+
+    fts_readings.time = base::Time::now();
+    _fts_readings.write(fts_readings);
+}
+
 void Marta::setJointCommands()
 {
     if (_joints_commands.read(joints_commands, false) == RTT::NewData)
@@ -117,4 +152,20 @@ void Marta::getJointInformation()
     m_pPlatform_Driver->getNodeAnalogInput(analogConfig[1].id, &dAnalogInput);
     base::JointState& joint_current(joints_readings[analogConfig[1].name]);
     joint_current.raw = (dAnalogInput - 2.5) * system_current_factor;
+}
+
+void Marta::getFtsInformation()
+{
+    for (int i = 0; i < numFts; i++)
+    {
+        double fx, fy, fz;
+        double tx, ty, tz;
+        
+        m_pPlatform_Driver->getNodeFtsForceN(i, &fx, &fy, &fz); 
+        m_pPlatform_Driver->getNodeFtsTorqueNm(i, &tx, &ty, &tz); 
+
+        base::Wrench& wrench(fts_readings[i]);
+        wrench.force = base::Vector3d(fx, fy, fz); 
+        wrench.torque = base::Vector3d(tx, ty, tz); 
+    }
 }

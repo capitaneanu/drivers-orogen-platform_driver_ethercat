@@ -6,6 +6,7 @@
 #include <base/Time.hpp>
 #include <base/commands/Joints.hpp>
 #include <base/samples/Joints.hpp>
+#include <base/samples/Wrenches.hpp>
 
 #include <base-logging/Logging.hpp>
 
@@ -75,9 +76,9 @@ class Task : public TaskBase
     Task(std::string const& name = "platform_driver::Task");
     Task(std::string const& name, RTT::ExecutionEngine* engine);
     ~Task();
-    bool configureHook();
+    virtual bool configureHook();
     bool startHook();
-    void updateHook();
+    virtual void updateHook();
     void errorHook();
     void stopHook();
     void cleanupHook();

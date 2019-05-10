@@ -73,4 +73,6 @@ end
 
 task_context "Marta" do
     subclasses "Task"
+    property("num_fts","int").doc("Number of force torque sensors in the platform.")
+    output_port "fts_readings", '/base/samples/Wrenches'
 end
