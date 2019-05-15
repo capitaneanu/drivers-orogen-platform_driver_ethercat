@@ -1,12 +1,5 @@
 #include "Exoter.hpp"
 
-#ifndef D2R
-#define D2R M_PI / 180.00 /** Convert degree to radian **/
-#endif
-#ifndef R2D
-#define R2D 180.00 / M_PI /** Convert radian to degree **/
-#endif
-
 using namespace platform_driver;
 
 Exoter::Exoter(std::string const& name) : ExoterBase(name) {}
@@ -103,9 +96,9 @@ void Exoter::getJointInformation()
 
         base::JointState& joint(joints_readings[passive_joint.name]);
         if (passive_joint.id == 0)
-            joint.position = (-(dAnalogInput - 2.5) * bogie_pitch_factor) * D2R;
+            joint.position = degToRad((-(dAnalogInput - 2.5) * bogie_pitch_factor));
         else
-            joint.position = (dAnalogInput - 2.5) * bogie_pitch_factor * D2R;
+            joint.position = degToRad((dAnalogInput - 2.5) * bogie_pitch_factor);
     }
 
     /** Get the Analog System information (Voltage) **/

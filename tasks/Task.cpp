@@ -121,3 +121,6 @@ void Task::cleanupHook()
     TaskBase::cleanupHook();
     delete m_pPlatform_Driver;
 }
+
+double Task::degToRad(const double deg) const { return deg * M_PI / 180.0; }
+double Task::radToDeg(const double rad) const { return rad * 180.0 / M_PI; }

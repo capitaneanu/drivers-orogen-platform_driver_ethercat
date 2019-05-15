@@ -72,6 +72,9 @@ class Task : public TaskBase
     /** Reads the status of the joints */
     base::samples::Joints joints_readings;
 
+    double degToRad(const double deg) const;
+    double radToDeg(const double rad) const;
+
   public:
     Task(std::string const& name = "platform_driver::Task");
     Task(std::string const& name, RTT::ExecutionEngine* engine);

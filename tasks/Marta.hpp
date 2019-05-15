@@ -16,6 +16,7 @@ class Marta : public MartaBase
 
     int numFts;
     base::samples::Wrenches fts_readings;
+
   public:
     Marta(std::string const& name = "platform_driver::Marta");
     Marta(std::string const& name, RTT::ExecutionEngine* engine);

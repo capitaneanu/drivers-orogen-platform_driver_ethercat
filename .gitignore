@@ -4,6 +4,7 @@ templates/*
 .*.swp
 build/*
 **/logs
+.vscode
 
 *autobuild-stamp
 
