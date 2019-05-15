@@ -1,5 +1,4 @@
-#ifndef PLATFORM_DRIVER_MARTA_TASK_HPP
-#define PLATFORM_DRIVER_MARTA_TASK_HPP
+#pragma once
 
 #include "platform_driver/MartaBase.hpp"
 
@@ -14,8 +13,8 @@ class Marta : public MartaBase
     void getJointInformation();
     void getFtsInformation();
 
-    int numFts;
-    base::samples::Wrenches fts_readings;
+    int num_fts_;
+    base::samples::Wrenches fts_readings_;
 
   public:
     Marta(std::string const& name = "platform_driver::Marta");
@@ -25,6 +24,4 @@ class Marta : public MartaBase
     bool configureHook();
     void updateHook();
 };
-}
-
-#endif
+}  // namespace platform_driver

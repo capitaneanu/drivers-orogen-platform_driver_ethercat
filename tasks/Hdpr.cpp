@@ -3,43 +3,41 @@
 using namespace platform_driver;
 
 Hdpr::Hdpr(std::string const& name) : HdprBase(name) {}
-
 Hdpr::Hdpr(std::string const& name, RTT::ExecutionEngine* engine) : HdprBase(name, engine) {}
-
 Hdpr::~Hdpr() {}
 
 void Hdpr::setJointCommands()
 {
-    if (_joints_commands.read(joints_commands, false) == RTT::NewData)
+    if (_joints_commands.read(joints_commands_, false) == RTT::NewData)
     {
-        for (size_t i = 0; i < joints_commands.size(); ++i)
+        for (size_t i = 0; i < joints_commands_.size(); ++i)
         {
-            if (canParameters.Active[i])
+            if (can_parameters_.Active[i])
             {
-                base::JointState& joint(joints_commands[i]);
+                base::JointState& joint(joints_commands_[i]);
                 if (joint.isPosition())
                 {
-                    m_pPlatform_Driver->nodePositionCommandRad(i, joint.position);
+                    platform_driver_->nodePositionCommandRad(i, joint.position);
                 }
                 else if (joint.isSpeed())
                 {
-                    if (start_motor[i] && i < 6)
+                    if (start_motor_[i] && i < 6)
                     {
-                        m_pPlatform_Driver->startNode(i);
-                        start_motor[i] = false;
+                        platform_driver_->startNode(i);
+                        start_motor_[i] = false;
                     }
-                    m_pPlatform_Driver->nodeVelocityCommandRadS(i, joint.speed);
+                    platform_driver_->nodeVelocityCommandRadS(i, joint.speed);
 
                     if (i == 10 && joint.speed == 0)
                     {
                         for (int j = 0; j < 6; j++)
                         {
-                            stop_motor[j] = true;
+                            stop_motor_[j] = true;
                         }
                     }
                     else if (i < 6)
                     {
-                        stop_motor[i] = false;
+                        stop_motor_[i] = false;
                     }
                 }
             }
@@ -50,61 +48,60 @@ void Hdpr::setJointCommands()
 void Hdpr::getJointInformation()
 {
     bool error_in_motor = false;
-    for (int i = 0; i < numMotors; i++)
+    for (int i = 0; i < num_motors_; i++)
     {
-        bool status = m_pPlatform_Driver->getNodeData(
-            i, &dPositionRad, &dVelocityRadS, &dCurrentAmp, &dTorqueNm);
+        bool status = platform_driver_->getNodeData(i, &position_, &velocity_, &current_, &torque_);
 
-        /** Joints readings & status information **/
-        base::JointState& joint(joints_readings[i]);
-        joint.position = dPositionRad;
-        joint.speed = dVelocityRadS;
-        if (stop_motor[i] && i < 6 && std::abs(joint.speed) < 0.01)
+        // Joints readings & status information
+        base::JointState& joint(joints_readings_[i]);
+        joint.position = position_;
+        joint.speed = velocity_;
+        if (stop_motor_[i] && i < 6 && std::abs(joint.speed) < 0.01)
         {
-            m_pPlatform_Driver->nodeTorqueCommandNm(i, 0.0);
-            m_pPlatform_Driver->shutdownNode(i);
-            stop_motor[i] = false;
-            start_motor[i] = true;
+            platform_driver_->nodeTorqueCommandNm(i, 0.0);
+            platform_driver_->shutdownNode(i);
+            stop_motor_[i] = false;
+            start_motor_[i] = true;
         }
-        joint.raw = dCurrentAmp;
-        joint.effort = dTorqueNm;
+        joint.raw = current_;
+        joint.effort = torque_;
 
-        if (canParameters.Active[i] && status)
-            joints_status[i] = true;
+        if (can_parameters_.Active[i] && status)
+            joints_status_[i] = true;
         else
-            joints_status[i] = false;
+            joints_status_[i] = false;
 
         if (!status)
         {
-            if (joints_resurrection[i] < 3)
+            if (joints_resurrection_[i] < 3)
             {
-                //! In case of reseting a node stop the motion of the rest of the motor
-                for (size_t j = 0; j < static_cast<size_t>(numMotors); ++j)
+                // In case of reseting a node stop the motion of the rest of the motor
+                for (size_t j = 0; j < static_cast<size_t>(num_motors_); ++j)
                 {
-                    if (canParameters.Active[j])
+                    if (can_parameters_.Active[j])
                     {
-                        m_pPlatform_Driver->nodeVelocityCommandRadS(j, 0.0);
+                        platform_driver_->nodeVelocityCommandRadS(j, 0.0);
                     }
                 }
                 LOG_INFO_S << "Resetting motor " << i;
-                m_pPlatform_Driver->resetNode(i);
-                joints_resurrection[i]++;
+                platform_driver_->resetNode(i);
+                joints_resurrection_[i]++;
             }
             else
             {
-                if (canParameters.Active[i] == ACTIVE)
+                if (can_parameters_.Active[i] == ACTIVE)
                 {
-                    //! In case of inactivating a node stop the motion of the rest of the motor
-                    for (size_t j = 0; j < static_cast<size_t>(numMotors); ++j)
+                    // In case of inactivating a node stop the motion of the rest of the motor
+                    for (size_t j = 0; j < static_cast<size_t>(num_motors_); ++j)
                     {
-                        if (canParameters.Active[j])
+                        if (can_parameters_.Active[j])
                         {
-                            m_pPlatform_Driver->nodeVelocityCommandRadS(j, 0.0);
+                            platform_driver_->nodeVelocityCommandRadS(j, 0.0);
                         }
                     }
-                    m_pPlatform_Driver->shutdownNode(i);
+                    platform_driver_->shutdownNode(i);
                     LOG_INFO_S << "Motor " << i << " INACTIVE";
-                    canParameters.Active[i] = INACTIVE;
+                    can_parameters_.Active[i] = INACTIVE;
                 }
             }
             _error_in_motor.write(i + 1);
@@ -113,15 +110,15 @@ void Hdpr::getJointInformation()
     }
     if (!error_in_motor) _error_in_motor.write(0);
 
-    /** Get the Passive joints information **/
-    for (const auto& passive_joint : passiveConfig)
+    // Get the Passive joints information
+    for (const auto& passive_joint : passive_config_)
     {
-        m_pPlatform_Driver->getNodeAnalogInput(passive_joint.id, &dAnalogInput);
+        platform_driver_->getNodeAnalogInput(passive_joint.id, &analog_input_);
 
-        base::JointState& joint(joints_readings[passive_joint.name]);
+        base::JointState& joint(joints_readings_[passive_joint.name]);
         if (passive_joint.id == 3 || passive_joint.id == 5)
-            joint.position = (-dAnalogInput) * bogie_pitch_factor;  //*D2R;
+            joint.position = (-analog_input_) * bogie_pitch_factor_;  //*D2R;
         else
-            joint.position = (dAnalogInput)*bogie_pitch_factor;  //*D2R;
+            joint.position = (analog_input_)*bogie_pitch_factor_;  //*D2R;
     }
 }

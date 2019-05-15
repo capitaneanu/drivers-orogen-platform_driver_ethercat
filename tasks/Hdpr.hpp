@@ -1,5 +1,4 @@
-#ifndef PLATFORM_DRIVER_HDPR_TASK_HPP
-#define PLATFORM_DRIVER_HDPR_TASK_HPP
+#pragma once
 
 #include "platform_driver/HdprBase.hpp"
 
@@ -19,6 +18,4 @@ class Hdpr : public HdprBase
     Hdpr(std::string const& name, RTT::ExecutionEngine* engine);
     ~Hdpr();
 };
-}
-
-#endif
+}  // namespace platform_driver

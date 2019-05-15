@@ -1,5 +1,4 @@
-#ifndef PLATFORM_DRIVER_EXOTER_TASK_HPP
-#define PLATFORM_DRIVER_EXOTER_TASK_HPP
+#pragma once
 
 #include "platform_driver/ExoterBase.hpp"
 
@@ -18,6 +17,4 @@ class Exoter : public ExoterBase
     Exoter(std::string const& name, RTT::ExecutionEngine* engine);
     ~Exoter();
 };
-}
-
-#endif
+}  // namespace platform_driver

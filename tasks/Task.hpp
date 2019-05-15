@@ -1,12 +1,12 @@
 #pragma once
 
-#include "platform_driver/TaskBase.hpp"
-#include "platform_driver/platform_driverTypes.hpp"
-
 #include <base/Time.hpp>
 #include <base/commands/Joints.hpp>
 #include <base/samples/Joints.hpp>
 #include <base/samples/Wrenches.hpp>
+
+#include "platform_driver/TaskBase.hpp"
+#include "platform_driver/platform_driverTypes.hpp"
 
 #include <base-logging/Logging.hpp>
 
@@ -23,54 +23,46 @@ class Task : public TaskBase
     virtual void setJointCommands() = 0;
     virtual void getJointInformation() = 0;
 
-    Platform_Driver* m_pPlatform_Driver;
-    base::Time t;
-    double dPositionRad;
-    double dVelocityRadS;
-    double dCurrentAmp;
-    double dTorqueNm;
-    double dAnalogInput;
+    Platform_Driver* platform_driver_;
 
-    /****************************/
-    /*  Configuration Variables */
-    /****************************/
+    // position in rad
+    double position_;
 
-    int numMotors;
-    double system_current_factor;
-    double system_voltage_factor;
-    double bogie_pitch_factor;
+    // velocity in rad/s
+    double velocity_;
 
-    /** Can Parameters **/
-    PltfCanParams canParameters;
+    // current in ampers
+    double current_;
 
-    /** Analog configuration **/
-    std::vector<platform_driver::AnalogId> passiveConfig, analogConfig;
+    // torque in newton meters
+    double torque_;
 
-    /**********************/
-    /*  Input  Variables */
-    /*********************/
+    double analog_input_;
 
-    /** Commands of the Joints **/
-    base::commands::Joints joints_commands;
+    // Configuration variables
+    int num_motors_;
+    double system_current_factor_;
+    double system_voltage_factor_;
+    double bogie_pitch_factor_;
 
-    /************************/
-    /*  Internal  Variables */
-    /************************/
+    PltfCanParams can_parameters_;
 
-    uint64_t sample_index;
+    // Analog configuration
+    std::vector<platform_driver::AnalogId> passive_config_;
+    std::vector<platform_driver::AnalogId> analog_config_;
 
-    std::vector<bool> joints_status;
-    std::vector<bool> stop_motor;
-    std::vector<bool> start_motor;
-    std::vector<unsigned int> joints_resurrection;  // Counter to keep track of anumber of attends
-                                                    // to (re)start a joint/motor
+    base::commands::Joints joints_commands_;
 
-    /**********************/
-    /*  Output  Variables */
-    /**********************/
+    uint64_t sample_index_;
 
-    /** Reads the status of the joints */
-    base::samples::Joints joints_readings;
+    std::vector<bool> joints_status_;
+    std::vector<bool> stop_motor_;
+    std::vector<bool> start_motor_;
+
+    // Counter to keep track of anumber of attends to (re)start a joint/motor
+    std::vector<unsigned int> joints_resurrection_;
+
+    base::samples::Joints joints_readings_;
 
     double degToRad(const double deg) const;
     double radToDeg(const double rad) const;
@@ -87,5 +79,4 @@ class Task : public TaskBase
     void cleanupHook();
 };
 
-}
-
+}  // namespace platform_driver
