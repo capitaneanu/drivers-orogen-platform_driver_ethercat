@@ -1,5 +1,5 @@
 #include "Marta.hpp"
-#include <platform_driver/Platform_Driver.h>
+#include <platform_driver/PlatformDriverEthercat.h>
 
 using namespace platform_driver;
 
@@ -21,6 +21,9 @@ bool Marta::configureHook()
     {
         fts_readings_.names[i] = can_parameters_.Name[num_motors_ + i];
     }
+
+    platform_driver_.reset(new PlatformDriverEthercat(
+        _num_motors, _num_nodes, _can_dev_type, _can_dev_address, _watchdog));
 
     return true;
 }
@@ -71,7 +74,7 @@ void Marta::getJointInformation()
     {
         bool status = platform_driver_->getNodeData(i, &position_, &velocity_, &current_, &torque_);
 
-        /** Joints readings & status information **/
+        // Joints readings & status information
         base::JointState& joint(joints_readings_[i]);
         joint.position = position_;
         joint.speed = velocity_;
@@ -152,10 +155,14 @@ void Marta::getFtsInformation()
         double fx, fy, fz;
         double tx, ty, tz;
 
-        platform_driver_->getNodeFtsForceN(i, &fx, &fy, &fz);
-        platform_driver_->getNodeFtsTorqueNm(i, &tx, &ty, &tz);
+        dynamic_cast<PlatformDriverEthercat*>(platform_driver_.get())
+            ->getNodeFtsForceN(i, &fx, &fy, &fz);
+        dynamic_cast<PlatformDriverEthercat*>(platform_driver_.get())
+            ->getNodeFtsForceN(i, &fx, &fy, &fz);
+        // platform_driver_->getNodeFtsForceN(i, &fx, &fy, &fz);
+        // platform_driver_->getNodeFtsTorqueNm(i, &tx, &ty, &tz);
 
-        base::Wrench& wrench(fts_readings_[i]);
+        auto& wrench(fts_readings_[i]);
         wrench.force = base::Vector3d(fx, fy, fz);
         wrench.torque = base::Vector3d(tx, ty, tz);
     }

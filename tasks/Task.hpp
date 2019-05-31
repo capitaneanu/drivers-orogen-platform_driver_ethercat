@@ -4,13 +4,14 @@
 #include <base/commands/Joints.hpp>
 #include <base/samples/Joints.hpp>
 #include <base/samples/Wrenches.hpp>
+#include <memory>
 
 #include "platform_driver/TaskBase.hpp"
 #include "platform_driver/platform_driverTypes.hpp"
 
 #include <base-logging/Logging.hpp>
 
-class Platform_Driver;
+class PlatformDriver;
 
 namespace platform_driver
 {
@@ -23,7 +24,7 @@ class Task : public TaskBase
     virtual void setJointCommands() = 0;
     virtual void getJointInformation() = 0;
 
-    Platform_Driver* platform_driver_;
+    std::unique_ptr<PlatformDriver> platform_driver_;
 
     // position in rad
     double position_;

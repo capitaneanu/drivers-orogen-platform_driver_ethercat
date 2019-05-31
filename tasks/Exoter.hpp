@@ -16,5 +16,6 @@ class Exoter : public ExoterBase
     Exoter(std::string const& name = "platform_driver::Exoter");
     Exoter(std::string const& name, RTT::ExecutionEngine* engine);
     ~Exoter();
+    bool configureHook();
 };
 }  // namespace platform_driver

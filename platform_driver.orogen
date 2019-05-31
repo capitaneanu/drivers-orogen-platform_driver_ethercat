@@ -7,7 +7,9 @@ using_library "platform_driver"
 # If new data types need to be defined, they have to be put in a separate C++
 # header, and this header will be loaded here
 import_types_from "platform_driverTypes.hpp"
-import_types_from "platform_driver/Platform_Driver.h"
+import_types_from "platform_driver/CanEnumsAndStructs.h"
+import_types_from "platform_driver/PlatformDriverEthercat.h"
+import_types_from "platform_driver/PlatformDriverPcan.h"
 
 # If the component/deployments use data types that are defined in other oroGen
 # projects, these projects should be imported there as well.

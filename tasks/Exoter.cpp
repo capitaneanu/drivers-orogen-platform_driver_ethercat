@@ -1,4 +1,6 @@
 #include "Exoter.hpp"
+#include <platform_driver/PlatformDriverPcan.h>
+#include <platform_driver/CanDriveWhistle.h>
 
 using namespace platform_driver;
 
@@ -107,4 +109,17 @@ void Exoter::getJointInformation()
     platform_driver_->getNodeAnalogInput(analog_config_[1].id, &analog_input_);
     base::JointState& joint_current(joints_readings_[analog_config_[1].name]);
     joint_current.raw = (analog_input_ - 2.5) * system_current_factor_;
+}
+
+bool Exoter::configureHook()
+{
+    if (!ExoterBase::configureHook() || !Task::configureHook())
+    {
+        return false;
+    }
+
+    platform_driver_ = std::unique_ptr<PlatformDriverPcan>(new PlatformDriverPcan(
+        _num_motors, _num_nodes, _can_dev_type, _can_dev_address, _watchdog));
+
+    return true;
 }

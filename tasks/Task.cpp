@@ -1,5 +1,5 @@
 #include "Task.hpp"
-#include <platform_driver/Platform_Driver.h>
+#include <platform_driver/PlatformDriver.h>
 
 using namespace platform_driver;
 
@@ -29,8 +29,8 @@ bool Task::configureHook()
         return false;
     }
 
-    platform_driver_ =
-        new Platform_Driver(_num_motors, _num_nodes, _can_dev_type, _can_dev_address, _watchdog);
+    //platform_driver_ =
+    //    new PlatformDriver(_num_motors, _num_nodes, _can_dev_type, _can_dev_address, _watchdog);
 
     joints_status_.resize(num_motors_);
     joints_readings_.resize(num_motors_ + passive_config_.size() + analog_config_.size());
@@ -119,7 +119,6 @@ void Task::stopHook()
 void Task::cleanupHook()
 {
     TaskBase::cleanupHook();
-    delete platform_driver_;
 }
 
 double Task::degToRad(const double deg) const { return deg * M_PI / 180.0; }

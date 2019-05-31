@@ -1,4 +1,5 @@
 #include "Hdpr.hpp"
+#include <platform_driver/PlatformDriverPcan.h>
 
 using namespace platform_driver;
 
@@ -121,4 +122,17 @@ void Hdpr::getJointInformation()
         else
             joint.position = (analog_input_)*bogie_pitch_factor_;  //*D2R;
     }
+}
+
+bool Hdpr::configureHook()
+{
+    if (!HdprBase::configureHook() || !Task::configureHook())
+    {
+        return false;
+    }
+
+    platform_driver_.reset(new PlatformDriverPcan(
+        _num_motors, _num_nodes, _can_dev_type, _can_dev_address, _watchdog));
+
+    return true;
 }
