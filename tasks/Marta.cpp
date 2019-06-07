@@ -1,7 +1,7 @@
 #include "Marta.hpp"
-#include <platform_driver/PlatformDriverEthercat.h>
+#include <platform_driver_ethercat/PlatformDriverEthercat.h>
 
-using namespace platform_driver;
+using namespace platform_driver_ethercat;
 
 Marta::Marta(std::string const& name) : MartaBase(name) {}
 Marta::Marta(std::string const& name, RTT::ExecutionEngine* engine) : MartaBase(name, engine) {}
@@ -32,12 +32,6 @@ void Marta::updateHook()
 {
     MartaBase::updateHook();
     Task::updateHook();
-
-    setJointCommands();
-    getJointInformation();
-
-    joints_readings_.time = base::Time::now();
-    _joints_readings.write(joints_readings_);
 
     getFtsInformation();
 
@@ -155,12 +149,8 @@ void Marta::getFtsInformation()
         double fx, fy, fz;
         double tx, ty, tz;
 
-        dynamic_cast<PlatformDriverEthercat*>(platform_driver_.get())
-            ->getNodeFtsForceN(i, &fx, &fy, &fz);
-        dynamic_cast<PlatformDriverEthercat*>(platform_driver_.get())
-            ->getNodeFtsForceN(i, &fx, &fy, &fz);
-        // platform_driver_->getNodeFtsForceN(i, &fx, &fy, &fz);
-        // platform_driver_->getNodeFtsTorqueNm(i, &tx, &ty, &tz);
+        platform_driver_->getNodeFtsForceN(i, &fx, &fy, &fz);
+        platform_driver_->getNodeFtsForceN(i, &fx, &fy, &fz);
 
         auto& wrench(fts_readings_[i]);
         wrench.force = base::Vector3d(fx, fy, fz);

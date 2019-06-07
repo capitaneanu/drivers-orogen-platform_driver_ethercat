@@ -1,11 +1,11 @@
 <package>
-  <description brief="Rock platform driver component for the ExoTeR rover">
+  <description brief="Rock platform driver component for rovers using Ethercat, e.g. Marta">
   This component is responsible for the low level motion control of the platform. Controls every motor axis in the platform. Receives a vector of commands to the motors and informs of the status of those.
   </description>
   <author>Martin Azkarate/Martin.Azkarate@esa.int</author>
   <license>GPL v2 or later</license>
   <url>http://</url>
   <logo>http://</logo>
-  <depend package="drivers/platform_driver" />
   <depend package="base/types" />
+  <depend package="drivers/platform_driver_ethercat" />
 </package>

@@ -6,14 +6,14 @@
 #include <base/samples/Wrenches.hpp>
 #include <memory>
 
-#include "platform_driver/TaskBase.hpp"
-#include "platform_driver/platform_driverTypes.hpp"
+#include "platform_driver_ethercat/TaskBase.hpp"
+#include "platform_driver_ethercat/platform_driver_ethercatTypes.hpp"
 
 #include <base-logging/Logging.hpp>
 
-class PlatformDriver;
+class PlatformDriverEthercat;
 
-namespace platform_driver
+namespace platform_driver_ethercat
 {
 
 class Task : public TaskBase
@@ -24,7 +24,7 @@ class Task : public TaskBase
     virtual void setJointCommands() = 0;
     virtual void getJointInformation() = 0;
 
-    std::unique_ptr<PlatformDriver> platform_driver_;
+    std::unique_ptr<PlatformDriverEthercat> platform_driver_;
 
     // position in rad
     double position_;
@@ -49,8 +49,8 @@ class Task : public TaskBase
     PltfCanParams can_parameters_;
 
     // Analog configuration
-    std::vector<platform_driver::AnalogId> passive_config_;
-    std::vector<platform_driver::AnalogId> analog_config_;
+    std::vector<platform_driver_ethercat::AnalogId> passive_config_;
+    std::vector<platform_driver_ethercat::AnalogId> analog_config_;
 
     base::commands::Joints joints_commands_;
 
@@ -69,7 +69,7 @@ class Task : public TaskBase
     double radToDeg(const double rad) const;
 
   public:
-    Task(std::string const& name = "platform_driver::Task");
+    Task(std::string const& name = "platform_driver_ethercat::Task");
     Task(std::string const& name, RTT::ExecutionEngine* engine);
     ~Task();
     virtual bool configureHook();
@@ -80,4 +80,4 @@ class Task : public TaskBase
     void cleanupHook();
 };
 
-}  // namespace platform_driver
+}  // namespace platform_driver_ethercat

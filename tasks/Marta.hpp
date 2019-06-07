@@ -1,8 +1,8 @@
 #pragma once
 
-#include "platform_driver/MartaBase.hpp"
+#include "platform_driver_ethercat/MartaBase.hpp"
 
-namespace platform_driver
+namespace platform_driver_ethercat
 {
 class Marta : public MartaBase
 {
@@ -17,7 +17,7 @@ class Marta : public MartaBase
     base::samples::Wrenches fts_readings_;
 
   public:
-    Marta(std::string const& name = "platform_driver::Marta");
+    Marta(std::string const& name = "platform_driver_ethercat::Marta");
     Marta(std::string const& name, RTT::ExecutionEngine* engine);
     ~Marta();
 

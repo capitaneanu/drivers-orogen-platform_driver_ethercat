@@ -1,15 +1,14 @@
-name "platform_driver"
+name "platform_driver_ethercat"
 # Optionally declare the version number
 # version "0.1"
 
-using_library "platform_driver"
+using_library "platform_driver_ethercat"
 
 # If new data types need to be defined, they have to be put in a separate C++
 # header, and this header will be loaded here
-import_types_from "platform_driverTypes.hpp"
-import_types_from "platform_driver/CanEnumsAndStructs.h"
-import_types_from "platform_driver/PlatformDriverEthercat.h"
-import_types_from "platform_driver/PlatformDriverPcan.h"
+import_types_from "platform_driver_ethercatTypes.hpp"
+import_types_from "platform_driver_ethercat/CanEnumsAndStructs.h"
+import_types_from "platform_driver_ethercat/PlatformDriverEthercat.h"
 
 # If the component/deployments use data types that are defined in other oroGen
 # projects, these projects should be imported there as well.
@@ -44,8 +43,8 @@ task_context "Task" do
     property("current_factor","double",41.6).doc("system current measurement factor to convert from internal to physical units")
     property("voltage_factor","double",3.93).doc("system voltage measurement factor to convert from internal to physical units")
     property("bogie_factor","double",72).doc("system bogie measurement factor to convert from internal to physical units")
-    property("analog_readings_config", "/std/vector</platform_driver/AnalogId>").doc("Analog readings identifiers")
-    property("passive_readings_config", "/std/vector</platform_driver/AnalogId>").doc("Passive joints readings identifiers")
+    property("analog_readings_config", "/std/vector</platform_driver_ethercat/AnalogId>").doc("Analog readings identifiers")
+    property("passive_readings_config", "/std/vector</platform_driver_ethercat/AnalogId>").doc("Passive joints readings identifiers")
 
     # An input port, i.e. an object from which the component gets data from
     # other components' outputs
@@ -63,14 +62,6 @@ task_context "Task" do
     output_port "joints_readings", '/base/samples/Joints'
     output_port "error_in_motor", 'int'
 
-end
-
-task_context "Exoter" do
-    subclasses "Task"
-end
-
-task_context "Hdpr" do
-    subclasses "Task"
 end
 
 task_context "Marta" do

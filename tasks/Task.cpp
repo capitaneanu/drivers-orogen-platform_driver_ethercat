@@ -1,7 +1,7 @@
 #include "Task.hpp"
-#include <platform_driver/PlatformDriver.h>
+#include <platform_driver_ethercat/PlatformDriverEthercat.h>
 
-using namespace platform_driver;
+using namespace platform_driver_ethercat;
 
 Task::Task(std::string const& name) : TaskBase(name) {}
 Task::Task(std::string const& name, RTT::ExecutionEngine* engine) : TaskBase(name, engine) {}
@@ -29,7 +29,7 @@ bool Task::configureHook()
         return false;
     }
 
-    //platform_driver_ =
+    // platform_driver_ =
     //    new PlatformDriver(_num_motors, _num_nodes, _can_dev_type, _can_dev_address, _watchdog);
 
     joints_status_.resize(num_motors_);
@@ -116,10 +116,7 @@ void Task::stopHook()
     platform_driver_->shutdownPltf();
 }
 
-void Task::cleanupHook()
-{
-    TaskBase::cleanupHook();
-}
+void Task::cleanupHook() { TaskBase::cleanupHook(); }
 
 double Task::degToRad(const double deg) const { return deg * M_PI / 180.0; }
 double Task::radToDeg(const double rad) const { return rad * 180.0 / M_PI; }
