@@ -61,11 +61,11 @@ task_context "Task" do
     # if this output is connected to an input or not.
     output_port "joints_readings", '/base/samples/Joints'
     output_port "error_in_motor", 'int'
-
 end
 
 task_context "Marta" do
     subclasses "Task"
     property("num_fts","int").doc("Number of force torque sensors in the platform.")
-    output_port "fts_readings", '/base/samples/Wrenches'
+    output_port "fts_readings", "/base/samples/Wrenches"
+    output_port "motor_temps", "/platform_driver_ethercat/Temperatures"
 end

@@ -32,23 +32,9 @@ bool Task::configureHook()
     // platform_driver_ =
     //    new PlatformDriver(_num_motors, _num_nodes, _can_dev_type, _can_dev_address, _watchdog);
 
-    joints_status_.resize(num_motors_);
     joints_readings_.resize(num_motors_ + passive_config_.size() + analog_config_.size());
     system_current_factor_ = _current_factor.value();
     system_voltage_factor_ = _voltage_factor.value();
-    bogie_pitch_factor_ = _bogie_factor.value();
-    joints_resurrection_.resize(num_motors_);
-    sample_index_ = 0;
-    stop_motor_.resize(num_motors_);
-    start_motor_.resize(num_motors_);
-
-    // Initialize values of joints_resurrection_
-    for (int j = 0; j < num_motors_; ++j)
-    {
-        joints_resurrection_[j] = 0;
-        stop_motor_[j] = false;
-        start_motor_[j] = true;
-    }
 
     // Fill the Joints names with the can_parameters names
     size_t i = 0;

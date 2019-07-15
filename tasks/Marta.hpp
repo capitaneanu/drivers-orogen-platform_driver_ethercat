@@ -12,9 +12,11 @@ class Marta : public MartaBase
     void setJointCommands();
     void getJointInformation();
     void getFtsInformation();
+    void getMotorTemps();
 
     int num_fts_;
     base::samples::Wrenches fts_readings_;
+    Temperatures motor_temps_;
 
   public:
     Marta(std::string const& name = "platform_driver_ethercat::Marta");
