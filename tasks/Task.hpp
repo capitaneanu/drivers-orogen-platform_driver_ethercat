@@ -29,11 +29,9 @@ class Task : public TaskBase
     int num_motors_;
     double system_current_factor_;
     double system_voltage_factor_;
-    PltfCanParams can_parameters_;
-
-    // Analog configuration
-    std::vector<platform_driver_ethercat::AnalogId> passive_config_;
-    std::vector<platform_driver_ethercat::AnalogId> analog_config_;
+    std::vector<MotorMap> motor_mapping_;
+    std::vector<SlaveMap> passive_joint_mapping_;
+    std::vector<SlaveMap> analog_input_mapping_;
 
     base::commands::Joints joints_commands_;
     base::samples::Joints joints_readings_;
