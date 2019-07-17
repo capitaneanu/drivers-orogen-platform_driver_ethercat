@@ -25,13 +25,13 @@ task_context "Task" do
     # in the C++ code with # _config_value.get() and _config_value.set(new_value).
     #property "config_value", "/std/string"
     property("can_dev_address","/std/string","/dev/pcan0").doc("device address in the system")
-    property("num_nodes","int").doc("Number of can nodes in the platform")
+    property("num_slaves","int").doc("Number of can slaves in the platform")
     property("current_factor","double",41.6).doc("system current measurement factor to convert from internal to physical units")
     property("voltage_factor","double",3.93).doc("system voltage measurement factor to convert from internal to physical units")
     property("motor_mapping","/std/vector</platform_driver_ethercat/MotorMap>").doc("Motor slave mapping and config")
     property("fts_mapping","/std/vector</platform_driver_ethercat/MotorMap>").doc("Force torque sensor slave mapping")
-    property("analog_input_mapping", "/std/vector</platform_driver_ethercat/SlaveMap>").doc("Analog readings identifiers")
-    property("passive_joint_config", "/std/vector</platform_driver_ethercat/SlaveMap>").doc("Passive joints readings identifiers")
+    property("passive_joint_mapping", "/std/vector</platform_driver_ethercat/SlaveMap>").doc("Passive joints readings identifiers")
+    property("temp_mapping", "/std/vector</platform_driver_ethercat/SlaveMap>").doc("Passive joints readings identifiers")
 
     # An input port, i.e. an object from which the component gets data from
     # other components' outputs

@@ -14,7 +14,7 @@ class Marta : public MartaBase
     void getFtsInformation();
     void getMotorTemps();
 
-    int num_fts_;
+    std::vector<SlaveMap> fts_mapping_;
     base::samples::Wrenches fts_readings_;
     Temperatures motor_temps_;
 

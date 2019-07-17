@@ -14,27 +14,14 @@ bool Task::configureHook()
         return false;
     }
 
-    can_parameters_ = _can_parameters.get();
-    analog_config_ = _analog_readings_config.get();
-    passive_config_ = _passive_readings_config.get();
-    num_motors_ = _num_motors.value();
-
-    if (static_cast<unsigned int>(_num_nodes) != _can_parameters.get().CanId.size()
-        || _can_parameters.get().CanId.size() != _can_parameters.get().Name.size()
-        || _can_parameters.get().Name.size() != _can_parameters.get().Type.size())
-    {
-        LOG_ERROR_S << "wrong config " << _num_nodes << " " << _can_parameters.get().CanId.size()
-                    << " " << _can_parameters.get().Name.size() << " "
-                    << _can_parameters.get().Type.size();
-        return false;
-    }
-
-    // platform_driver_ =
-    //    new PlatformDriver(_num_motors, _num_nodes, _can_dev_type, _can_dev_address, _watchdog);
-
-    joints_readings_.resize(num_motors_ + passive_config_.size() + analog_config_.size());
+    num_nodes_ = _num_nodes.value();
     system_current_factor_ = _current_factor.value();
     system_voltage_factor_ = _voltage_factor.value();
+    motor_mapping_ = _motor_mapping.get();
+    passive_joint_mapping_ = _passive_joint_mapping.get();
+    temp_mapping_ = _temp_mapping.get();
+
+    joints_readings_.resize(motor_mapping_.size() + passive_joint_mapping_.size());
 
     // Fill the Joints names with the can_parameters names
     size_t i = 0;
