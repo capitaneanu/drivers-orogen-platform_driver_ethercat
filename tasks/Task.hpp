@@ -10,10 +10,10 @@
 
 #include <base-logging/Logging.hpp>
 
-class PlatformDriverEthercat;
-
 namespace platform_driver_ethercat
 {
+
+class PlatformDriverEthercat;
 
 class Task : public TaskBase
 {
