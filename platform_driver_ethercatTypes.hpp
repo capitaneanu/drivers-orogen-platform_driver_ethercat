@@ -3,21 +3,16 @@
 #include <string>
 #include <base/NamedVector.hpp>
 #include <base/Time.hpp>
-#include <platform_driver_ethercat/CanEnumsAndStructs.h>
 
 namespace platform_driver_ethercat
 {
-    struct SlaveMap
+    struct PassiveJointParams
     {
-        int slave;
+        unsigned int drive_id;
         std::string name;
     };
 
-    struct MotorMap : public SlaveMap
-    {
-        GearMotorParamType config;
-        bool active;
-    };
+    typedef std::vector<PassiveJointParams> PassiveJointMapping;
 
     struct Temperatures : public base::NamedVector<double>
     {

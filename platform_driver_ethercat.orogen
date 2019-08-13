@@ -7,7 +7,7 @@ using_library "platform_driver_ethercat"
 # If new data types need to be defined, they have to be put in a separate C++
 # header, and this header will be loaded here
 import_types_from "platform_driver_ethercatTypes.hpp"
-import_types_from "platform_driver_ethercat/CanEnumsAndStructs.h"
+import_types_from "platform_driver_ethercat/PlatformDriverEthercatTypes.h"
 
 # If the component/deployments use data types that are defined in other oroGen
 # projects, these projects should be imported there as well.
@@ -18,20 +18,19 @@ import_types_from "base"
 # The corresponding C++ class can be edited in tasks/Task.hpp and
 # tasks/Task.cpp, and will be put in the platform_driver namespace.
 task_context "Task" do
-    abstract
     default_activity :periodic, 0.04
     needs_configuration
     # A configuration property (here, a std::string). Its value can be retrieved
     # in the C++ code with # _config_value.get() and _config_value.set(new_value).
     #property "config_value", "/std/string"
-    property("can_dev_address","/std/string","/dev/pcan0").doc("device address in the system")
-    property("num_slaves","int").doc("Number of can slaves in the platform")
-    property("current_factor","double",41.6).doc("system current measurement factor to convert from internal to physical units")
-    property("voltage_factor","double",3.93).doc("system voltage measurement factor to convert from internal to physical units")
-    property("motor_mapping","/std/vector</platform_driver_ethercat/MotorMap>").doc("Motor slave mapping and config")
-    property("fts_mapping","/std/vector</platform_driver_ethercat/MotorMap>").doc("Force torque sensor slave mapping")
-    property("passive_joint_mapping", "/std/vector</platform_driver_ethercat/SlaveMap>").doc("Passive joints readings identifiers")
-    property("temp_mapping", "/std/vector</platform_driver_ethercat/SlaveMap>").doc("Passive joints readings identifiers")
+    property("dev_address","/std/string").doc("device address in the system")
+    property("num_slaves","unsigned int").doc("Number of can slaves in the platform")
+    property("configs","std/vector<platform_driver_ethercat/DriveConfig>").doc("Configuration parameters for Elmo drives") # not used directly, workaround for rock not handling yaml aliases properly
+    property("current_factor","double").doc("system current measurement factor to convert from internal to physical units")
+    property("voltage_factor","double").doc("system voltage measurement factor to convert from internal to physical units")
+    property("drive_mapping","platform_driver_ethercat/DriveSlaveMapping").doc("Elmo drives slave mapping and config")
+    property("fts_mapping","platform_driver_ethercat/FtsSlaveMapping").doc("Force torque sensor slave mapping")
+    property("passive_mapping", "platform_driver_ethercat/PassiveJointMapping").doc("Passive joints slave mapping")
 
     # An input port, i.e. an object from which the component gets data from
     # other components' outputs
@@ -47,11 +46,6 @@ task_context "Task" do
     # Data can be written using _output.write(value). _output.connected() returns
     # if this output is connected to an input or not.
     output_port "joints_readings", '/base/samples/Joints'
-end
-
-task_context "Marta" do
-    subclasses "Task"
-    property("num_fts","int").doc("Number of force torque sensors in the platform.")
     output_port "fts_readings", "/base/samples/Wrenches"
-    output_port "motor_temps", "/platform_driver_ethercat/Temperatures"
+    output_port "temp_readings", "/platform_driver_ethercat/Temperatures"
 end

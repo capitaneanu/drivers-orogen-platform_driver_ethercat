@@ -4,9 +4,11 @@
 #include <base/commands/Joints.hpp>
 #include <base/samples/Joints.hpp>
 #include <base/samples/Wrenches.hpp>
+#include <memory>
 
+#include "platform_driver_ethercat/PlatformDriverEthercatTypes.h"
 #include "platform_driver_ethercat/TaskBase.hpp"
-#include "platform_driver_ethercat/platform_driver_ethercatTypes.hpp"
+#include "platform_driver_ethercatTypes.hpp"
 
 #include <base-logging/Logging.hpp>
 
@@ -19,36 +21,33 @@ class Task : public TaskBase
 {
     friend class TaskBase;
 
-  protected:
-    virtual void setJointCommands() = 0;
-    virtual void getJointInformation() = 0;
-
-    std::unique_ptr<PlatformDriverEthercat> platform_driver_;
-
-    // Configuration variables
-    int num_nodes_;
-    double system_current_factor_;
-    double system_voltage_factor_;
-    std::vector<MotorMap> motor_mapping_;
-    std::vector<SlaveMap> passive_mapping_;
-    std::vector<SlaveMap> temp_mapping_;
-
-    base::commands::Joints joints_commands_;
-    base::samples::Joints joints_readings_;
-
-    double degToRad(const double deg) const;
-    double radToDeg(const double rad) const;
-
   public:
     Task(std::string const& name = "platform_driver_ethercat::Task");
     Task(std::string const& name, RTT::ExecutionEngine* engine);
     ~Task();
-    virtual bool configureHook();
+
+    bool configureHook();
     bool startHook();
-    virtual void updateHook();
+    void updateHook();
     void errorHook();
     void stopHook();
     void cleanupHook();
+
+  protected:
+    void evalJointsCommands();
+    void updateJointsReadings();
+    void updateFtsReadings();
+    void updateTempReadings();
+
+    std::unique_ptr<PlatformDriverEthercat> platform_driver_;
+
+    DriveSlaveMapping drive_mapping_;
+    FtsSlaveMapping fts_mapping_;
+    PassiveJointMapping passive_mapping_;
+
+    base::samples::Joints joints_readings_;
+    base::samples::Wrenches fts_readings_;
+    Temperatures temp_readings_;
 };
 
-}  // namespace platform_driver_ethercat
+}

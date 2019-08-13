@@ -14,36 +14,49 @@ bool Task::configureHook()
         return false;
     }
 
-    num_nodes_ = _num_nodes.value();
-    system_current_factor_ = _current_factor.value();
-    system_voltage_factor_ = _voltage_factor.value();
-    motor_mapping_ = _motor_mapping.get();
-    passive_joint_mapping_ = _passive_joint_mapping.get();
-    temp_mapping_ = _temp_mapping.get();
+    // Read configuration
+    const auto dev_address = _dev_address.value();
+    const auto num_slaves = _num_slaves.value();
+    drive_mapping_ = _drive_mapping.get();
+    fts_mapping_ = _fts_mapping.get();
+    passive_mapping_ = _passive_mapping.get();
 
-    joints_readings_.resize(motor_mapping_.size() + passive_joint_mapping_.size());
+    joints_readings_.resize(drive_mapping_.size() + passive_mapping_.size());
+    fts_readings_.resize(fts_mapping_.size());
+    temp_readings_.resize(drive_mapping_.size());
 
-    // Fill the Joints names with the can_parameters names
+    // Fill the joint names with the drive mapping names
     size_t i = 0;
-    for (int j = 0; j < num_motors_; ++j)
-    {
-        joints_readings_.names[i] = can_parameters_.Name[j];
-        ++i;
-    }
-
-    // Fill the Joints names with the passive_config names
-    for (const auto& joint : passive_config_)
+    for (const auto& joint : drive_mapping_)
     {
         joints_readings_.names[i] = joint.name;
         ++i;
     }
 
-    // Fill the Joints names with the system info
-    for (const auto& joint : analog_config_)
+    // Fill the joint names with the passive mapping names
+    for (const auto& joint : passive_mapping_)
     {
         joints_readings_.names[i] = joint.name;
         ++i;
     }
+
+    // Fill the fts output names with the fts mapping names
+    i = 0;
+    for (const auto& fts : fts_mapping_)
+    {
+        fts_readings_.names[i] = fts.name;
+        ++i;
+    }
+
+    // Fill the temp output names with the drive mapping names
+    i = 0;
+    for (const auto& joint : drive_mapping_)
+    {
+        temp_readings_.names[i] = joint.name;
+        ++i;
+    }
+
+    platform_driver_.reset(new PlatformDriverEthercat(dev_address, num_slaves, drive_mapping_, fts_mapping_));
 
     return true;
 }
@@ -52,13 +65,7 @@ bool Task::startHook()
 {
     if (!TaskBase::startHook()) return false;
 
-    if (platform_driver_->initPltf(_param_gear_motor_wheel,
-                                   _param_gear_motor_steer,
-                                   _param_gear_motor_walk,
-                                   _param_gear_motor_pan,
-                                   _param_gear_motor_tilt,
-                                   _param_gear_motor_arm,
-                                   _can_parameters))
+    if (platform_driver_->initPlatform())
     {
         return true;
     }
@@ -70,26 +77,108 @@ void Task::updateHook()
 {
     TaskBase::updateHook();
 
-    setJointCommands();
-    getJointInformation();
+    evalJointsCommands();
+
+    updateJointsReadings();
+    updateFtsReadings();
+    updateTempReadings();
 
     joints_readings_.time = base::Time::now();
     _joints_readings.write(joints_readings_);
+
+    fts_readings_.time = base::Time::now();
+    _fts_readings.write(fts_readings_);
+
+    temp_readings_.time = base::Time::now();
+    _temp_readings.write(temp_readings_);
 }
 
 void Task::errorHook()
 {
     TaskBase::errorHook();
-    platform_driver_->shutdownPltf();
+    platform_driver_->shutdownPlatform();
 }
 
 void Task::stopHook()
 {
     TaskBase::stopHook();
-    platform_driver_->shutdownPltf();
+    platform_driver_->shutdownPlatform();
 }
 
 void Task::cleanupHook() { TaskBase::cleanupHook(); }
 
-double Task::degToRad(const double deg) const { return deg * M_PI / 180.0; }
-double Task::radToDeg(const double rad) const { return rad * 180.0 / M_PI; }
+void Task::evalJointsCommands()
+{
+    base::commands::Joints joints_commands;
+
+    if (_joints_commands.read(joints_commands, false) == RTT::NewData)
+    {
+        for (size_t i = 0; i < joints_commands.size(); ++i)
+        {
+            base::JointState& joint(joints_commands[i]);
+
+            if (joint.isPosition())
+            {
+                platform_driver_->commandDrivePositionRad(i, joint.position);
+            }
+            else if (joint.isSpeed())
+            {
+                platform_driver_->commandDriveVelocityRadSec(i, joint.speed);
+            }
+        }
+    }
+}
+
+void Task::updateJointsReadings()
+{
+    // get joints readings
+    size_t i = 0;
+    for (size_t j = 0; j < drive_mapping_.size(); ++j)
+    {
+        double position, velocity, current, torque;
+
+        bool is_error = platform_driver_->readDriveData(j, position, velocity, current, torque);
+
+        base::JointState& joint(joints_readings_[i]);
+        joint.position = position;
+        joint.speed = velocity;
+        joint.raw = current;
+        joint.effort = torque;
+
+        ++i;
+    }
+
+    // TODO: get passive joints information
+    for (size_t j = 0; j < passive_mapping_.size(); ++j)
+    {
+        base::JointState& joint(joints_readings_[i]);
+        joint.position = 0;  // set to zero until encoders are working
+        ++i;
+    }
+}
+
+void Task::updateFtsReadings()
+{
+    for (size_t i = 0; i < fts_mapping_.size(); ++i)
+    {
+        double fx, fy, fz;
+        double tx, ty, tz;
+
+        platform_driver_->readFtsForceN(i, fx, fy, fz);
+        platform_driver_->readFtsTorqueNm(i, tx, ty, tz);
+
+        auto& wrench(fts_readings_[i]);
+        wrench.force = base::Vector3d(fx, fy, fz);
+        wrench.torque = base::Vector3d(tx, ty, tz);
+    }
+}
+
+void Task::updateTempReadings()
+{
+    for (size_t i = 0; i < drive_mapping_.size(); ++i)
+    {
+        double& motor_temp = temp_readings_[i];
+        platform_driver_->readDriveAnalogInputV(
+            i, motor_temp);  // TODO: Implement conversion to degrees
+    }
+}
