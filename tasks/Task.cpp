@@ -56,7 +56,8 @@ bool Task::configureHook()
         ++i;
     }
 
-    platform_driver_.reset(new PlatformDriverEthercat(dev_address, num_slaves, drive_mapping_, fts_mapping_));
+    platform_driver_.reset(
+        new PlatformDriverEthercat(dev_address, num_slaves, drive_mapping_, fts_mapping_));
 
     return true;
 }
@@ -119,11 +120,11 @@ void Task::evalJointsCommands()
 
             if (joint.isPosition())
             {
-                platform_driver_->commandDrivePositionRad(i, joint.position);
+                platform_driver_->commandDrivePositionRad(joints_commands.names[i], joint.position);
             }
             else if (joint.isSpeed())
             {
-                platform_driver_->commandDriveVelocityRadSec(i, joint.speed);
+                platform_driver_->commandDriveVelocityRadSec(joints_commands.names[i], joint.speed);
             }
         }
     }
@@ -133,11 +134,12 @@ void Task::updateJointsReadings()
 {
     // get joints readings
     size_t i = 0;
-    for (size_t j = 0; j < drive_mapping_.size(); ++j)
+    for (const auto& drive_params : drive_mapping_)
     {
         double position, velocity, current, torque;
 
-        bool is_error = platform_driver_->readDriveData(j, position, velocity, current, torque);
+        bool is_error =
+            platform_driver_->readDriveData(drive_params.name, position, velocity, current, torque);
 
         base::JointState& joint(joints_readings_[i]);
         joint.position = position;
@@ -149,36 +151,43 @@ void Task::updateJointsReadings()
     }
 
     // TODO: get passive joints information
-    for (size_t j = 0; j < passive_mapping_.size(); ++j)
+    for (const auto& passive_params : passive_mapping_)
     {
         base::JointState& joint(joints_readings_[i]);
         joint.position = 0;  // set to zero until encoders are working
+
         ++i;
     }
 }
 
 void Task::updateFtsReadings()
 {
-    for (size_t i = 0; i < fts_mapping_.size(); ++i)
+    size_t i = 0;
+    for (const auto& fts_params : fts_mapping_)
     {
         double fx, fy, fz;
         double tx, ty, tz;
 
-        platform_driver_->readFtsForceN(i, fx, fy, fz);
-        platform_driver_->readFtsTorqueNm(i, tx, ty, tz);
+        platform_driver_->readFtsForceN(fts_params.name, fx, fy, fz);
+        platform_driver_->readFtsTorqueNm(fts_params.name, tx, ty, tz);
 
-        auto& wrench(fts_readings_[i]);
+        base::Wrench& wrench(fts_readings_[i]);
         wrench.force = base::Vector3d(fx, fy, fz);
         wrench.torque = base::Vector3d(tx, ty, tz);
+
+        ++i;
     }
 }
 
 void Task::updateTempReadings()
 {
-    for (size_t i = 0; i < drive_mapping_.size(); ++i)
+    size_t i = 0;
+    for (const auto& drive_params : drive_mapping_)
     {
-        double& motor_temp = temp_readings_[i];
+        double& motor_temp(temp_readings_[i]);
         platform_driver_->readDriveAnalogInputV(
-            i, motor_temp);  // TODO: Implement conversion to degrees
+            drive_params.name, motor_temp);  // TODO: Implement conversion to degrees
+
+        ++i;
     }
 }
