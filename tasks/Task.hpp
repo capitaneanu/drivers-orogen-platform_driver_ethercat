@@ -43,7 +43,7 @@ class Task : public TaskBase
 
     DriveSlaveMapping drive_mapping_;
     FtsSlaveMapping fts_mapping_;
-    PassiveJointMapping passive_mapping_;
+    JointMapping joint_mapping_;
 
     base::samples::Joints joints_readings_;
     base::samples::Wrenches fts_readings_;

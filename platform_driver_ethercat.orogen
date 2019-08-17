@@ -30,7 +30,7 @@ task_context "Task" do
     property("voltage_factor","double").doc("system voltage measurement factor to convert from internal to physical units")
     property("drive_mapping","platform_driver_ethercat/DriveSlaveMapping").doc("Elmo drives slave mapping and config")
     property("fts_mapping","platform_driver_ethercat/FtsSlaveMapping").doc("Force torque sensor slave mapping")
-    property("passive_mapping", "platform_driver_ethercat/PassiveJointMapping").doc("Passive joints slave mapping")
+    property("joint_mapping", "platform_driver_ethercat/JointMapping").doc("Mapping of joints to drives")
 
     # An input port, i.e. an object from which the component gets data from
     # other components' outputs

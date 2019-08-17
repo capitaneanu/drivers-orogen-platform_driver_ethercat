@@ -19,45 +19,58 @@ bool Task::configureHook()
     const auto num_slaves = _num_slaves.value();
     drive_mapping_ = _drive_mapping.get();
     fts_mapping_ = _fts_mapping.get();
-    passive_mapping_ = _passive_mapping.get();
+    joint_mapping_ = _joint_mapping.get();
 
-    joints_readings_.resize(drive_mapping_.size() + passive_mapping_.size());
     fts_readings_.resize(fts_mapping_.size());
+    joints_readings_.resize(joint_mapping_.size());
     temp_readings_.resize(drive_mapping_.size());
 
-    // Fill the joint names with the drive mapping names
+    platform_driver_.reset(new PlatformDriverEthercat(dev_address, num_slaves));
+
+    // Add the drives to the platform driver
+    for (const auto& drive : drive_mapping_)
+    {
+        std::cout << "Drive name: " << drive.name << std::endl;
+        platform_driver_->addDriveTwitter(
+            drive.slave_id, drive.name, drive.config, drive.temp_sensor);
+    }
+
+    // Fill the fts output names with the fts mapping names and add the fts to platform driver
     size_t i = 0;
-    for (const auto& joint : drive_mapping_)
-    {
-        joints_readings_.names[i] = joint.name;
-        ++i;
-    }
-
-    // Fill the joint names with the passive mapping names
-    for (const auto& joint : passive_mapping_)
-    {
-        joints_readings_.names[i] = joint.name;
-        ++i;
-    }
-
-    // Fill the fts output names with the fts mapping names
-    i = 0;
     for (const auto& fts : fts_mapping_)
     {
         fts_readings_.names[i] = fts.name;
+        platform_driver_->addAtiFts(fts.slave_id, fts.name);
+        ++i;
+    }
+
+    // Fill the joint names with the joint mapping names and add the joints to platform driver
+    i = 0;
+    for (const auto& joint : joint_mapping_)
+    {
+        joints_readings_.names[i] = joint.name;
+
+        std::cout << "Joint name: " << joint.name << " Drive name: " << joint.drive << std::endl;
+
+        if (joint.type == ACTIVE)
+        {
+            platform_driver_->addActiveJoint(joint.name, joint.drive, joint.enabled);
+        }
+        else if (joint.type == PASSIVE)
+        {
+            platform_driver_->addPassiveJoint(joint.name, joint.drive, joint.enabled);
+        }
+
         ++i;
     }
 
     // Fill the temp output names with the drive mapping names
     i = 0;
-    for (const auto& joint : drive_mapping_)
+    for (const auto& drive : drive_mapping_)
     {
-        temp_readings_.names[i] = joint.name;
+        temp_readings_.names[i] = drive.name;
         ++i;
     }
-
-    platform_driver_.reset(
-        new PlatformDriverEthercat(dev_address, num_slaves, drive_mapping_, fts_mapping_));
 
     return true;
 }
@@ -120,11 +133,11 @@ void Task::evalJointsCommands()
 
             if (joint.isPosition())
             {
-                platform_driver_->commandDrivePositionRad(joints_commands.names[i], joint.position);
+                platform_driver_->commandJointPositionRad(joints_commands.names[i], joint.position);
             }
             else if (joint.isSpeed())
             {
-                platform_driver_->commandDriveVelocityRadSec(joints_commands.names[i], joint.speed);
+                platform_driver_->commandJointVelocityRadSec(joints_commands.names[i], joint.speed);
             }
         }
     }
@@ -134,27 +147,18 @@ void Task::updateJointsReadings()
 {
     // get joints readings
     size_t i = 0;
-    for (const auto& drive_params : drive_mapping_)
+    for (const auto& joint : joint_mapping_)
     {
-        double position, velocity, current, torque;
+        double position, velocity, torque;
 
-        bool is_error =
-            platform_driver_->readDriveData(drive_params.name, position, velocity, current, torque);
+        platform_driver_->readJointPositionRad(joint.name, position);
+        platform_driver_->readJointVelocityRadSec(joint.name, velocity);
+        platform_driver_->readJointTorqueNm(joint.name, torque);
 
-        base::JointState& joint(joints_readings_[i]);
-        joint.position = position;
-        joint.speed = velocity;
-        joint.raw = current;
-        joint.effort = torque;
-
-        ++i;
-    }
-
-    // TODO: get passive joints information
-    for (const auto& passive_params : passive_mapping_)
-    {
-        base::JointState& joint(joints_readings_[i]);
-        joint.position = 0;  // set to zero until encoders are working
+        base::JointState& joint_state(joints_readings_[i]);
+        joint_state.position = position;
+        joint_state.speed = velocity;
+        joint_state.effort = torque;
 
         ++i;
     }
@@ -181,13 +185,13 @@ void Task::updateFtsReadings()
 
 void Task::updateTempReadings()
 {
-    size_t i = 0;
-    for (const auto& drive_params : drive_mapping_)
-    {
-        double& motor_temp(temp_readings_[i]);
-        platform_driver_->readDriveAnalogInputV(
-            drive_params.name, motor_temp);  // TODO: Implement conversion to degrees
+   // size_t i = 0;
+   // for (const auto& drive_params : drive_mapping_)
+   // {
+   //     double& motor_temp(temp_readings_[i]);
+   //     platform_driver_->readDriveAnalogInputV(
+   //         drive_params.name, motor_temp);  // TODO: Implement conversion to degrees
 
-        ++i;
-    }
+   //     ++i;
+   // }
 }
