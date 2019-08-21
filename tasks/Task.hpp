@@ -1,7 +1,5 @@
 #pragma once
 
-#include <base/Time.hpp>
-#include <base/commands/Joints.hpp>
 #include <base/samples/Joints.hpp>
 #include <base/samples/Wrenches.hpp>
 #include <memory>
@@ -9,8 +7,6 @@
 #include "platform_driver_ethercat/PlatformDriverEthercatTypes.h"
 #include "platform_driver_ethercat/TaskBase.hpp"
 #include "platform_driver_ethercatTypes.hpp"
-
-#include <base-logging/Logging.hpp>
 
 namespace platform_driver_ethercat
 {
@@ -33,7 +29,8 @@ class Task : public TaskBase
     void stopHook();
     void cleanupHook();
 
-  protected:
+  private:
+    bool validateConfig();
     void evalJointsCommands();
     void updateJointsReadings();
     void updateFtsReadings();
@@ -41,6 +38,8 @@ class Task : public TaskBase
 
     std::unique_ptr<PlatformDriverEthercat> platform_driver_;
 
+    std::string dev_address_;
+    unsigned int num_slaves_;
     DriveSlaveMapping drive_mapping_;
     FtsSlaveMapping fts_mapping_;
     JointMapping joint_mapping_;
@@ -49,5 +48,4 @@ class Task : public TaskBase
     base::samples::Wrenches fts_readings_;
     Temperatures temp_readings_;
 };
-
 }
