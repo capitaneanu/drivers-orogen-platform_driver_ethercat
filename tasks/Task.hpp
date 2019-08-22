@@ -31,8 +31,8 @@ class Task : public TaskBase
 
   private:
     bool validateConfig();
-    void evalJointsCommands();
-    void updateJointsReadings();
+    void evalJointCommands();
+    void updateJointReadings();
     void updateFtsReadings();
     void updateTempReadings();
 
@@ -44,7 +44,7 @@ class Task : public TaskBase
     FtsSlaveMapping fts_mapping_;
     JointMapping joint_mapping_;
 
-    base::samples::Joints joints_readings_;
+    base::samples::Joints joint_readings_;
     base::samples::Wrenches fts_readings_;
     Temperatures temp_readings_;
 };

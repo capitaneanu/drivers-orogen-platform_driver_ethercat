@@ -18,7 +18,6 @@ struct DriveSlaveParams : public GenericSlaveParams
 {
     DriveConfig config;
     bool enabled;
-    bool temp_sensor;
 };
 
 struct FtsSlaveParams : public GenericSlaveParams
