@@ -8,40 +8,51 @@
 
 namespace platform_driver_ethercat
 {
-struct GenericSlaveParams
+struct SlaveParams
 {
     unsigned int slave_id;
     std::string name;
 };
 
-struct DriveSlaveParams : public GenericSlaveParams
+struct DriveSlaveParams : public SlaveParams
 {
     DriveConfig config;
     bool enabled;
 };
 
-struct FtsSlaveParams : public GenericSlaveParams
+struct FtsSlaveParams : public SlaveParams
 {
-};
-
-enum JointType
-{
-    ACTIVE,
-    PASSIVE
 };
 
 struct JointParams
 {
     std::string name;
     std::string drive;
-    JointType type;
     bool enabled;
 };
 
-typedef std::vector<GenericSlaveParams> GenericSlaveMapping;
+struct JointConfig
+{
+    bool flip_sign;
+    double min_position_rad;
+    double max_position_rad;
+    double max_velocity_rad_sec;
+    double max_torque_nm;
+};
+
+struct ActiveJointParams : public JointParams
+{
+    JointConfig config;
+};
+
+struct PassiveJointParams : public JointParams
+{
+};
+
 typedef std::vector<DriveSlaveParams> DriveSlaveMapping;
 typedef std::vector<FtsSlaveParams> FtsSlaveMapping;
-typedef std::vector<JointParams> JointMapping;
+typedef std::vector<ActiveJointParams> ActiveJointMapping;
+typedef std::vector<PassiveJointParams> PassiveJointMapping;
 
 struct Temperatures : public base::NamedVector<double>
 {

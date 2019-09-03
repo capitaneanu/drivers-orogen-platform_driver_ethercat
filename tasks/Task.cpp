@@ -21,11 +21,12 @@ bool Task::configureHook()
     }
 
     // Read configuration
-    dev_address_ = _dev_address.get();
+    network_interface_ = _network_interface.get();
     num_slaves_ = _num_slaves.get();
     drive_mapping_ = _drive_mapping.get();
     fts_mapping_ = _fts_mapping.get();
-    joint_mapping_ = _joint_mapping.get();
+    active_joint_mapping_ = _active_joint_mapping.get();
+    passive_joint_mapping_ = _passive_joint_mapping.get();
 
     if (!validateConfig())
     {
@@ -33,16 +34,15 @@ bool Task::configureHook()
     }
 
     fts_readings_.resize(fts_mapping_.size());
-    joint_readings_.resize(joint_mapping_.size());
-    temp_readings_.resize(joint_mapping_.size());
+    joint_readings_.resize(active_joint_mapping_.size() + passive_joint_mapping_.size());
+    temp_readings_.resize(active_joint_mapping_.size());
 
-    platform_driver_.reset(new PlatformDriverEthercat(dev_address_, num_slaves_));
+    platform_driver_.reset(new PlatformDriverEthercat(network_interface_, num_slaves_));
 
     // Add the drives to the platform driver
     for (const auto& drive : drive_mapping_)
     {
-        platform_driver_->addDriveTwitter(
-            drive.slave_id, drive.name, drive.config);
+        platform_driver_->addDriveTwitter(drive.slave_id, drive.name, drive.config);
     }
 
     // Fill the fts output names with the fts mapping names and add the fts to platform driver
@@ -57,20 +57,18 @@ bool Task::configureHook()
     // Fill the joint and temp output names with the joint mapping names and add the joints to
     // platform driver
     i = 0;
-    for (const auto& joint : joint_mapping_)
+    for (const auto& joint : active_joint_mapping_)
     {
         joint_readings_.names[i] = joint.name;
         temp_readings_.names[i] = joint.name;
+        platform_driver_->addActiveJoint(joint.name, joint.drive, joint.enabled);
+        ++i;
+    }
 
-        if (joint.type == ACTIVE)
-        {
-            platform_driver_->addActiveJoint(joint.name, joint.drive, joint.enabled);
-        }
-        else if (joint.type == PASSIVE)
-        {
-            platform_driver_->addPassiveJoint(joint.name, joint.drive, joint.enabled);
-        }
-
+    for (const auto& joint : passive_joint_mapping_)
+    {
+        joint_readings_.names[i] = joint.name;
+        platform_driver_->addPassiveJoint(joint.name, joint.drive, joint.enabled);
         ++i;
     }
 
@@ -127,9 +125,10 @@ bool Task::validateConfig()
 {
     // Check if interface exists
     struct stat buffer;
-    if (stat(("/sys/class/net/" + dev_address_).c_str(), &buffer) != 0)
+    if (stat(("/sys/class/net/" + network_interface_).c_str(), &buffer) != 0)
     {
-        LOG_ERROR_S << __PRETTY_FUNCTION__ << ": Interface " << dev_address_ << " does not exist";
+        LOG_ERROR_S << __PRETTY_FUNCTION__ << ": Interface " << network_interface_
+                    << " does not exist";
         return false;
     }
 
@@ -143,9 +142,9 @@ bool Task::validateConfig()
     std::set<unsigned int> id_set;
     std::set<std::string> name_set;
 
-    auto validateDevice = [&id_set, &name_set](GenericSlaveParams device) {
-        const auto& slave_id = device.slave_id;
-        const auto& name = device.name;
+    auto validateDevice = [&id_set, &name_set](SlaveParams params) {
+        const auto& slave_id = params.slave_id;
+        const auto& name = params.name;
 
         // Check if slave id is valid
         if (slave_id <= 0)
@@ -188,10 +187,11 @@ bool Task::validateConfig()
     }
 
     std::set<std::string> joint_set, active_set, passive_set;
-    for (const auto& joint : joint_mapping_)
-    {
-        const auto& name = joint.name;
-        const auto& drive = joint.drive;
+
+    auto validateJoint = [&drive_set, &joint_set](JointParams params,
+                                                  std::set<std::string>& current_set) {
+        const auto& name = params.name;
+        const auto& drive = params.drive;
 
         // Check if joint name already exists
         if (joint_set.find(name) != joint_set.end())
@@ -209,30 +209,25 @@ bool Task::validateConfig()
             return false;
         }
 
-        if (joint.type == ACTIVE)
+        // Check if the same drive is already in use for another joint of the current set
+        if (current_set.find(drive) != current_set.end())
         {
-            // Check if the same drive is already in use for another active joint
-            if (active_set.find(drive) != active_set.end())
-            {
-                LOG_ERROR_S << __PRETTY_FUNCTION__ << ": Drive " << drive
-                            << " already in use with another active joint";
-                return false;
-            }
-
-            active_set.insert(drive);
+            LOG_ERROR_S << __PRETTY_FUNCTION__ << ": Drive " << drive
+                        << " already in use with another joint of the same type";
+            return false;
         }
-        else if (joint.type == PASSIVE)
-        {
-            // Check if the same drive is already in use for another passive joint
-            if (passive_set.find(drive) != passive_set.end())
-            {
-                LOG_ERROR_S << __PRETTY_FUNCTION__ << ": Drive " << drive
-                            << " already in use with another passive joint";
-                return false;
-            }
 
-            passive_set.insert(drive);
-        }
+        current_set.insert(drive);
+    };
+
+    for (const auto& joint : active_joint_mapping_)
+    {
+        if (!validateJoint(joint, active_set)) return false;
+    }
+
+    for (const auto& joint : passive_joint_mapping_)
+    {
+        if (!validateJoint(joint, passive_set)) return false;
     }
 
     return true;
@@ -263,7 +258,24 @@ void Task::evalJointCommands()
 void Task::updateJointReadings()
 {
     size_t i = 0;
-    for (const auto& joint : joint_mapping_)
+
+    for (const auto& joint : active_joint_mapping_)
+    {
+        double position, velocity, torque;
+
+        platform_driver_->readJointPositionRad(joint.name, position);
+        platform_driver_->readJointVelocityRadSec(joint.name, velocity);
+        platform_driver_->readJointTorqueNm(joint.name, torque);
+
+        base::JointState& joint_state(joint_readings_[i]);
+        joint_state.position = position;
+        joint_state.speed = velocity;
+        joint_state.effort = torque;
+
+        ++i;
+    }
+
+    for (const auto& joint : passive_joint_mapping_)
     {
         double position, velocity, torque;
 
@@ -302,7 +314,7 @@ void Task::updateFtsReadings()
 void Task::updateTempReadings()
 {
     size_t i = 0;
-    for (const auto& joint : joint_mapping_)
+    for (const auto& joint : active_joint_mapping_)
     {
         double& joint_temp(temp_readings_[i]);
         platform_driver_->readJointTempDegC(joint.name, joint_temp);

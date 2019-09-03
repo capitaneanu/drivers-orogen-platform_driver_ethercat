@@ -23,14 +23,14 @@ task_context "Task" do
     # A configuration property (here, a std::string). Its value can be retrieved
     # in the C++ code with # _config_value.get() and _config_value.set(new_value).
     #property "config_value", "/std/string"
-    property("dev_address","/std/string").doc("device address in the system")
-    property("num_slaves","unsigned int").doc("Number of can slaves in the platform")
-    property("configs","std/vector<platform_driver_ethercat/DriveConfig>").doc("Configuration parameters for Elmo drives") # not used directly, workaround for rock not handling yaml aliases properly
-    property("current_factor","double").doc("system current measurement factor to convert from internal to physical units")
-    property("voltage_factor","double").doc("system voltage measurement factor to convert from internal to physical units")
-    property("drive_mapping","platform_driver_ethercat/DriveSlaveMapping").doc("Elmo drives slave mapping and config")
-    property("fts_mapping","platform_driver_ethercat/FtsSlaveMapping").doc("Force torque sensor slave mapping")
-    property("joint_mapping", "platform_driver_ethercat/JointMapping").doc("Mapping of joints to drives")
+    property("network_interface","/std/string").doc("Ethercat network interface")
+    property("num_slaves","unsigned int").doc("Number of slaves in the platform")
+    property("elmo_configs","std/vector<platform_driver_ethercat/DriveConfig>").doc("Configuration parameters for Elmo drives") # not used directly, workaround for rock not handling yaml aliases properly
+    property("drive_mapping","platform_driver_ethercat/DriveSlaveMapping").doc("Elmo drives slave mapping, names and config")
+    property("fts_mapping","platform_driver_ethercat/FtsSlaveMapping").doc("Force torque sensor slave mapping and names")
+    property("joint_configs","std/vector<platform_driver_ethercat/JointConfig>").doc("Configuration parameters for Elmo drives") # not used directly, workaround for rock not handling yaml aliases properly
+    property("active_joint_mapping", "platform_driver_ethercat/ActiveJointMapping").doc("Active joint names, mapping to drives and configuration")
+    property("passive_joint_mapping", "platform_driver_ethercat/PassiveJointMapping").doc("Passive joint names and mapping to drives")
 
     # An input port, i.e. an object from which the component gets data from
     # other components' outputs

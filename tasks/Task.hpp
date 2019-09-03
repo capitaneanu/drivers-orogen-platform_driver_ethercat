@@ -38,11 +38,12 @@ class Task : public TaskBase
 
     std::unique_ptr<PlatformDriverEthercat> platform_driver_;
 
-    std::string dev_address_;
+    std::string network_interface_;
     unsigned int num_slaves_;
     DriveSlaveMapping drive_mapping_;
     FtsSlaveMapping fts_mapping_;
-    JointMapping joint_mapping_;
+    ActiveJointMapping active_joint_mapping_;
+    PassiveJointMapping passive_joint_mapping_;
 
     base::samples::Joints joint_readings_;
     base::samples::Wrenches fts_readings_;
