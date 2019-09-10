@@ -42,7 +42,7 @@ bool Task::configureHook()
     // Add the drives to the platform driver
     for (const auto& drive : drive_mapping_)
     {
-        platform_driver_->addDriveTwitter(drive.slave_id, drive.name, drive.config);
+        platform_driver_->addDriveTwitter(drive.slave_id, drive.name, drive.params);
     }
 
     // Fill the fts output names with the fts mapping names and add the fts to platform driver
@@ -61,7 +61,7 @@ bool Task::configureHook()
     {
         joint_readings_.names[i] = joint.name;
         temp_readings_.names[i] = joint.name;
-        platform_driver_->addActiveJoint(joint.name, joint.drive, joint.enabled);
+        platform_driver_->addActiveJoint(joint.name, joint.drive, joint.params, joint.enabled);
         ++i;
     }
 
@@ -105,6 +105,8 @@ void Task::updateHook()
 
     temp_readings_.time = base::Time::now();
     _temp_readings.write(temp_readings_);
+
+    //LOG_DEBUG_S << __PRETTY_FUNCTION__ << ": " << base::Time::now();
 }
 
 void Task::errorHook()
@@ -142,9 +144,9 @@ bool Task::validateConfig()
     std::set<unsigned int> id_set;
     std::set<std::string> name_set;
 
-    auto validateDevice = [&id_set, &name_set](SlaveParams params) {
-        const auto& slave_id = params.slave_id;
-        const auto& name = params.name;
+    auto validateDevice = [&id_set, &name_set](SlaveConfig config) {
+        const auto& slave_id = config.slave_id;
+        const auto& name = config.name;
 
         // Check if slave id is valid
         if (slave_id <= 0)
@@ -188,10 +190,10 @@ bool Task::validateConfig()
 
     std::set<std::string> joint_set, active_set, passive_set;
 
-    auto validateJoint = [&drive_set, &joint_set](JointParams params,
+    auto validateJoint = [&drive_set, &joint_set](JointConfig config,
                                                   std::set<std::string>& current_set) {
-        const auto& name = params.name;
-        const auto& drive = params.drive;
+        const auto& name = config.name;
+        const auto& drive = config.drive;
 
         // Check if joint name already exists
         if (joint_set.find(name) != joint_set.end())
@@ -218,6 +220,8 @@ bool Task::validateConfig()
         }
 
         current_set.insert(drive);
+
+        return true;
     };
 
     for (const auto& joint : active_joint_mapping_)
@@ -237,7 +241,7 @@ void Task::evalJointCommands()
 {
     base::commands::Joints joint_commands;
 
-    if (_joints_commands.read(joint_commands, false) == RTT::NewData)
+    if (_joints_commands.readNewest(joint_commands, false) == RTT::NewData)
     {
         for (size_t i = 0; i < joint_commands.size(); ++i)
         {

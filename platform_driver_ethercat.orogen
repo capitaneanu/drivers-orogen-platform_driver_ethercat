@@ -16,19 +16,19 @@ import_types_from "base"
 # Declare a new task context (i.e., a component)
 #
 # The corresponding C++ class can be edited in tasks/Task.hpp and
-# tasks/Task.cpp, and will be put in the platform_driver namespace.
+# tasks/Task.cpp, and will be put in the platform_driver_ethercat namespace.
 task_context "Task" do
-    default_activity :periodic, 0.04
+    default_activity 'periodic', 0.04
     needs_configuration
     # A configuration property (here, a std::string). Its value can be retrieved
     # in the C++ code with # _config_value.get() and _config_value.set(new_value).
     #property "config_value", "/std/string"
     property("network_interface","/std/string").doc("Ethercat network interface")
     property("num_slaves","unsigned int").doc("Number of slaves in the platform")
-    property("elmo_configs","std/vector<platform_driver_ethercat/DriveConfig>").doc("Configuration parameters for Elmo drives") # not used directly, workaround for rock not handling yaml aliases properly
+    property("drive_params","std/vector<platform_driver_ethercat/DriveParams>").doc("Configuration parameters for Elmo drives") # not used directly, workaround for rock not handling yaml aliases properly
     property("drive_mapping","platform_driver_ethercat/DriveSlaveMapping").doc("Elmo drives slave mapping, names and config")
     property("fts_mapping","platform_driver_ethercat/FtsSlaveMapping").doc("Force torque sensor slave mapping and names")
-    property("joint_configs","std/vector<platform_driver_ethercat/JointConfig>").doc("Configuration parameters for Elmo drives") # not used directly, workaround for rock not handling yaml aliases properly
+    property("joint_params","std/vector<platform_driver_ethercat/ActiveJointParams>").doc("Configuration parameters for Elmo drives") # not used directly, workaround for rock not handling yaml aliases properly
     property("active_joint_mapping", "platform_driver_ethercat/ActiveJointMapping").doc("Active joint names, mapping to drives and configuration")
     property("passive_joint_mapping", "platform_driver_ethercat/PassiveJointMapping").doc("Passive joint names and mapping to drives")
 
