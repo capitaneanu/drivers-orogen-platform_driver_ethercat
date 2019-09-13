@@ -18,7 +18,7 @@ import_types_from "base"
 # The corresponding C++ class can be edited in tasks/Task.hpp and
 # tasks/Task.cpp, and will be put in the platform_driver_ethercat namespace.
 task_context "Task" do
-    default_activity 'periodic', 0.04
+    default_activity 'periodic', 0.01
     needs_configuration
     # A configuration property (here, a std::string). Its value can be retrieved
     # in the C++ code with # _config_value.get() and _config_value.set(new_value).

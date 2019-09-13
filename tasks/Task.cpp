@@ -91,11 +91,11 @@ void Task::updateHook()
 {
     TaskBase::updateHook();
 
-    evalJointCommands();
-
     updateJointReadings();
     updateFtsReadings();
     updateTempReadings();
+
+    evalJointCommands();
 
     joint_readings_.time = base::Time::now();
     _joints_readings.write(joint_readings_);
