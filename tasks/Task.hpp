@@ -48,5 +48,12 @@ class Task : public TaskBase
     base::samples::Joints joint_readings_;
     base::samples::Wrenches fts_readings_;
     Temperatures temp_readings_;
+
+    // moving average filter
+    static const int window_size = 1000;
+    std::vector<std::array<double, window_size>> temp_values;
+    std::vector<double> temp_sums;
+    int temp_index = 0;
+    bool first_window = true;
 };
 }

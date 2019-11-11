@@ -54,8 +54,8 @@ bool Task::configureHook()
         ++i;
     }
 
-    // Fill the joint and temp output names with the joint mapping names and add the joints to
-    // platform driver
+    // Fill the joint and temp output names with the joint mapping names, prepare the moving average
+    // filter and add the joints to platform driver
     i = 0;
     for (const auto& joint : active_joint_mapping_)
     {
@@ -64,6 +64,11 @@ bool Task::configureHook()
         platform_driver_->addActiveJoint(joint.name, joint.drive, joint.params, joint.enabled);
         ++i;
     }
+
+    std::array<double, window_size> temp_array;
+    temp_array.fill(0.0);
+    temp_values.assign(active_joint_mapping_.size(), temp_array);
+    temp_sums.assign(active_joint_mapping_.size(), 0.0);
 
     for (const auto& joint : passive_joint_mapping_)
     {
@@ -106,7 +111,7 @@ void Task::updateHook()
     temp_readings_.time = base::Time::now();
     _temp_readings.write(temp_readings_);
 
-    //LOG_DEBUG_S << __PRETTY_FUNCTION__ << ": " << base::Time::now();
+    // LOG_DEBUG_S << __PRETTY_FUNCTION__ << ": " << base::Time::now();
 }
 
 void Task::errorHook()
@@ -320,8 +325,28 @@ void Task::updateTempReadings()
     size_t i = 0;
     for (const auto& joint : active_joint_mapping_)
     {
-        double& joint_temp(temp_readings_[i]);
+        double joint_temp;
         platform_driver_->readJointTempDegC(joint.name, joint_temp);
+
+        temp_sums[i] += joint_temp - temp_values[i][temp_index];
+        temp_values[i][temp_index] = joint_temp;
+
+        if (first_window)
+        {
+            temp_readings_[i] = temp_sums[i] / (1.0 * (temp_index + 1));
+        }
+        else
+        {
+            temp_readings_[i] = temp_sums[i] / (1.0 * window_size);
+        }
+
         ++i;
     }
+
+    if (first_window && temp_index == window_size - 1)
+    {
+        first_window = false;
+    }
+
+    ++temp_index %= window_size;
 }
